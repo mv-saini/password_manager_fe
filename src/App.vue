@@ -1,26 +1,33 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-</template>
-
-<script>
-import HelloWorld from './components/HelloWorld.vue'
-
+<script setup>
+import NavigationDrawer from './components/NavigationDrawer.vue';
+/*
 export default {
   name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+
+  data: () => ({
+    //
+  }),
+}*/
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<template>
+  <v-app>
+
+    <NavigationDrawer/>
+    
+    <v-main>
+      <!--v-container>
+        <v-row class="text-center">
+          <v-col>
+            <router-link to="/">Home</router-link> |
+            <router-link to="/about">About</router-link>
+            <router-link to="/login">Login</router-link>
+          </v-col>
+        </v-row>
+      </v-container>
+      <!-->
+    <router-view/>
+  
+  </v-main>
+  </v-app>
+</template>
