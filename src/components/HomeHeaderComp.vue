@@ -1,5 +1,16 @@
 <script setup>
+  import router from '@/router';
   import AppLogo from './AppLogo.vue';
+  function login(){
+    router.push({
+      name: 'login'
+    });
+  }
+  function register(){
+    router.push({
+      name: 'register'
+    });
+  }
 </script>
 <template>
     <v-container class="text-center" style="background-color: #f1f5f8;">
@@ -26,14 +37,14 @@
       <v-col cols="4"/>
       <v-col cols="2" class="text-center">
         <div class="pb-1 text-caption text-center font-italic font-weight-thick">Already have an account.</div>
-        <v-btn prepend-icon="mdi-login" variant="outlined">
+        <v-btn @click="login" prepend-icon="mdi-account" variant="outlined">
           Login
         </v-btn>
       </v-col>
       <v-col cols="2" class="text-center">
         <div class="pb-1 text-caption text-center font-italic font-weight-thick">Don't have an account.</div>
-        <v-btn prepend-icon="mdi-signup" variant="outlined">
-          Sign up
+        <v-btn @click="register" prepend-icon="mdi-account-plus" variant="outlined">
+          Register
         </v-btn>
         <div class="pt-1 text-caption text-center font-italic font-weight-thick">No credit card required.</div>
       </v-col>

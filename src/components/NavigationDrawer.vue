@@ -1,10 +1,24 @@
 <script setup>
-  import { ref } from 'vue'
+  import router from '@/router';
+import { onMounted, ref } from 'vue';
   const log = ref(false)
-  function toggle() {
-    log.value = !log.value
-}
-
+  onMounted(async () => {
+    const msg = await fetch('http://localhost:3000/api/user',{
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include'
+    });
+    if(msg.status == 200){
+      log.value = !log.value;
+    }
+  });
+  function login(){
+    router.push({
+      name: 'login'
+    });
+  }
+  function logout(){
+    //logout 
+  }
 </script>
 <template>
     <v-navigation-drawer
@@ -18,7 +32,7 @@
         title="Logged"
         subtitle="sandra_a88@gmailcom"
       ></v-list-item>
-      <v-list-item v-else @click="toggle"
+      <v-list-item v-else @click="login"
         prepend-icon="mdi-account"
         title="Log In"
       ></v-list-item>
@@ -35,7 +49,7 @@
     
     <template v-slot:append v-if="log">
       <v-list density="compact" nav>
-        <v-list-item @click="toggle" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
+        <v-list-item @click="logout" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
       </v-list>
     </template>
     
