@@ -1,34 +1,53 @@
 <script setup>
   import AppLogo from '@/components/AppLogo.vue';
   import router from '@/router';
-  import { reactive } from 'vue';
+  import { reactive, ref } from 'vue';
+  
+  var check = ref(false)
   const data = reactive({
     email: '',
     password: ''
   });
+
+  async function checkSubmit(){
+    const emailFormat = /^[^@]+@\w+(\.\w+)+\w$/
+    if(emailFormat.test(data.email))
+        await submit();
+    else
+        check.value = true
+  }
   async function submit(){
     const res = await fetch('http://localhost:3000/api/login',{
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer{token}'
+        },
         credentials: 'include',
         body: JSON.stringify(data)
     })
-    if(res.status == 200){
+    if(res.status == 200)
         router.push({
             name: 'home'
         })
-    }
-    else{
-        data.email = ''
-        data.password = ''
-    }
   }
 </script>
 
 
 <template>
     <AppLogo class="mt-16"/>
-    <v-form @submit.prevent="submit" class="mt-8">
+    <v-container v-if="check" class="mt-8">
+        <v-row>
+            <v-col cols="4"/>
+            <v-col cols="4">
+                 <v-alert
+                 type="error" title='Check your credentials.' text='Email or Password is incorrect.'>
+                </v-alert>
+            </v-col>
+            <v-col cols="4"/>
+        </v-row>
+    </v-container>
+    <v-form @submit.prevent="checkSubmit">
         <v-container>
             <v-row>
                 <v-col cols="4"/>

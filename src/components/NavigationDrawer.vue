@@ -5,7 +5,6 @@ import { onMounted, ref } from 'vue';
   onMounted(async () => {
     const msg = await fetch('http://localhost:3000/api/user',{
         headers: {'Content-Type': 'application/json'},
-        credentials: 'include'
     });
     if(msg.status == 200){
       log.value = !log.value;

@@ -3,5 +3,8 @@
 </script>
 
 <template>
+  <head>
+    <title>Password Manager</title>
+  </head>
   <HomeComp />
 </template>

@@ -12,7 +12,6 @@ export default {
 
 <template>
   <v-app>
-
     <NavigationDrawer/>
     
     <v-main>
