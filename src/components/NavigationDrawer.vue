@@ -1,53 +1,47 @@
 <script setup>
-  import router from '@/router';
-import { onMounted, ref } from 'vue';
-  const log = ref(false)
-  onMounted(async () => {
+  import { computed } from '@vue/reactivity';
+  import { useStore } from 'vuex'
+  const store = useStore()
+  /*onMounted(async () => {
     const msg = await fetch('http://localhost:3000/api/user',{
         headers: {'Content-Type': 'application/json'},
     });
     if(msg.status == 200){
       log.value = !log.value;
     }
-  });
-  function login(){
-    router.push({
-      name: 'login'
-    });
-  }
+  });*/
+
+
+  const log = computed(() => store.getters.getAuth)
+  const user = computed(() => store.getters.getUser)
   function logout(){
-    //logout 
+    store.dispatch('access_token', null)
+    store.dispatch('set_user', null)
   }
 </script>
+
 <template>
     <v-navigation-drawer
       expand-on-hover
       rail
     >
-    
+
     <v-list>
-      <v-list-item v-if="log"
-        prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
+      <v-list-item prepend-icon="mdi-account" title="Login" to="login" v-if="!log"></v-list-item>
+      <v-list-item
         title="Logged"
-        subtitle="sandra_a88@gmailcom"
-      ></v-list-item>
-      <v-list-item v-else @click="login"
-        prepend-icon="mdi-account"
-        title="Log In"
-      ></v-list-item>
+        :subtitle="user"
+        v-else></v-list-item>
     </v-list>
 
     <v-divider></v-divider>
     
     <v-list density="compact" nav>
-      <v-list-item prepend-icon="mdi-home" title="Home" value="home" flat to="/"></v-list-item>
-      <v-list-item prepend-icon="mdi-folder" title="My Files" value="myfiles"></v-list-item>
-      <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item>
-      <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
+      <v-list-item prepend-icon="mdi-home" title="Home" value="home" to="/"></v-list-item>
     </v-list>
     
-    <template v-slot:append v-if="log">
-      <v-list density="compact" nav>
+    <template v-slot:append>
+      <v-list density="compact" nav v-if="log">
         <v-list-item @click="logout" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
       </v-list>
     </template>

@@ -3,11 +3,13 @@
   import AppLogo from '@/components/AppLogo.vue';
   import { useVuelidate } from '@vuelidate/core'
   import { required, minLength, maxLength, email, sameAs, helpers } from '@vuelidate/validators'
-  import { reactive } from 'vue';
-  import { computed } from '@vue/reactivity';
+  import { reactive, computed } from 'vue';
+  import { useStore } from 'vuex';
 
-  const uiLengthMax = 20
-  const uiLengthMin = 8
+  const store = useStore()
+
+  const uiLengthMax = computed(() => store.getters.getUiLengthMax)
+  const uiLengthMin = computed(() => store.getters.getUiLengthMin)
 
   const data = reactive({
     name: '',
@@ -21,7 +23,7 @@
   const rules = computed(() => {
     return{
         name: { required: helpers.withMessage('name is required', required), 
-            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax))  
+            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax.value, maxLength(uiLengthMax.value))  
         },
         surname: { required: helpers.withMessage('surname is required', required), 
             maxLength: maxLength(uiLengthMax) 
@@ -30,8 +32,8 @@
             email : helpers.withMessage(' is not a valid email address', email)
         },
         password: { required: helpers.withMessage('password is required', required), 
-            minLength: helpers.withMessage('The minimum legnth allowed is ' + uiLengthMin, minLength(uiLengthMin)), 
-            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax)) ,
+            minLength: helpers.withMessage('The minimum length allowed is ' + uiLengthMin.value, minLength(uiLengthMin.value)), 
+            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax.value, maxLength(uiLengthMax.value)) ,
             valid: helpers.withMessage('the password must contain atleast a lowercase letter, uppercase letter, a number and a symbol',
             function(value) {
                 const containsUppercase = /[A-Z]/.test(value)

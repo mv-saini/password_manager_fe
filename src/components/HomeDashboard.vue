@@ -10,8 +10,8 @@
         tab.value = val
     })
 
-    watch(lengthH, (val) => {
-        tabH.value = val
+    watch(lengthH, (valH) => {
+        tabH.value = valH
     })
     
 </script>

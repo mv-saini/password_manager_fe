@@ -2,34 +2,52 @@
   import AppLogo from '@/components/AppLogo.vue';
   import router from '@/router';
   import { reactive, ref } from 'vue';
+  import { useStore } from 'vuex'
   
+  const store = useStore()
   var check = ref(false)
+  var msg = ref('')
   const data = reactive({
     email: '',
     password: ''
-  });
+  });   
 
   async function checkSubmit(){
-    const emailFormat = /^[^@]+@\w+(\.\w+)+\w$/
-    if(emailFormat.test(data.email))
-        await submit();
-    else
+    if(data.email == '' || data.password == ''){
         check.value = true
+        msg.value = 'Email and Password is empty'
+    }
+    else{
+        await submit()
+    }
   }
+
   async function submit(){
-    const res = await fetch('http://localhost:3000/api/login',{
+    const response = await fetch('http://localhost:3000/api/login',{
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer{token}'
+            'Content-Type': 'application/json'
         },
         credentials: 'include',
         body: JSON.stringify(data)
     })
-    if(res.status == 200)
+    if(response.status == 200){
+        const resData = await response.json()
+        store.dispatch('set_user', resData.user)
+        store.dispatch('access_token', resData.accessToken)      
+        window.$cookies.set('AuthToken', resData.accessToken, 60 * 60 * 24, { httpOnly: true } );
         router.push({
             name: 'home'
         })
+    }
+    else if(response.status == 401){
+        check = true
+        msg.value = 'Incorrect password'
+    }
+    else{
+        check = true
+        msg.value = 'Email not found'
+    }
   }
 </script>
 
@@ -41,7 +59,8 @@
             <v-col cols="4"/>
             <v-col cols="4">
                  <v-alert
-                 type="error" title='Check your credentials.' text='Email or Password is incorrect.'>
+                 type="error" title='Check your credentials.'>
+                 {{ msg }}
                 </v-alert>
             </v-col>
             <v-col cols="4"/>
