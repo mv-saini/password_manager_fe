@@ -62,7 +62,7 @@
   }
 
   async function submit(){
-    await fetch('http://localhost:3000/api/register',{
+    await fetch(process.env.VUE_APP_REGISTER,{
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)

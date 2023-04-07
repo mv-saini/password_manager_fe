@@ -1,7 +1,7 @@
 <template>
     <v-container class="text-center">
         <v-row>
-            <v-col class="pt-5" cols="16">
+            <v-col cols="16">
                 <div class="text-center text-h3">
                     *LOGO*
                 </div>

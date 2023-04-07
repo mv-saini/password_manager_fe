@@ -1,4 +1,5 @@
 import { createStore } from "vuex";
+import createPersistedState from "vuex-persistedstate";
 
 const store = createStore({
     state:{
@@ -29,8 +30,8 @@ const store = createStore({
         ACCESS_TOKEN(state, token){
             state.token = token
         },
-        CHANGE_AUTH(state){
-            state.authenticated = !state.authenticated
+        CHANGE_AUTH(state, update){
+            state.authenticated = update
         },
         SET_USER(state, user){
             state.user = user
@@ -39,12 +40,15 @@ const store = createStore({
     actions:{
         access_token({ commit }, token){
             commit('ACCESS_TOKEN', token)
-            commit('CHANGE_AUTH')
+        },
+        change_auth({ commit }, update){
+            commit('CHANGE_AUTH', update)
         },
         set_user({ commit }, user){
             commit('SET_USER', user)
         }
     },
+    plugins: [createPersistedState()],
 })
 
 export default store

@@ -10,7 +10,7 @@
   const data = reactive({
     email: '',
     password: ''
-  });   
+  }); 
 
   async function checkSubmit(){
     if(data.email == '' || data.password == ''){
@@ -23,7 +23,7 @@
   }
 
   async function submit(){
-    const response = await fetch('http://localhost:3000/api/login',{
+    const response = await fetch(process.env.VUE_APP_LOGIN,{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -33,19 +33,20 @@
     })
     if(response.status == 200){
         const resData = await response.json()
-        store.dispatch('set_user', resData.user)
-        store.dispatch('access_token', resData.accessToken)      
-        window.$cookies.set('AuthToken', resData.accessToken, 60 * 60 * 24, { httpOnly: true } );
+        store.dispatch('set_user', resData.email)
+        store.dispatch('access_token', resData.accessToken)
+        store.dispatch('change_auth', true)
+        window.$cookies.set('logged', true, '15MIN')
         router.push({
             name: 'home'
         })
     }
     else if(response.status == 401){
-        check = true
+        check.value = true
         msg.value = 'Incorrect password'
     }
     else{
-        check = true
+        check.value = true
         msg.value = 'Email not found'
     }
   }
@@ -54,6 +55,7 @@
 
 <template>
     <AppLogo class="mt-16"/>
+
     <v-container v-if="check" class="mt-8">
         <v-row>
             <v-col cols="4"/>
@@ -66,6 +68,7 @@
             <v-col cols="4"/>
         </v-row>
     </v-container>
+
     <v-form @submit.prevent="checkSubmit">
         <v-container>
             <v-row>

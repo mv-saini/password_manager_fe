@@ -11,13 +11,20 @@
     }
   });*/
 
-
   const log = computed(() => store.getters.getAuth)
   const user = computed(() => store.getters.getUser)
+
+
+/*-----------------------------------------------------------------*/ 
+  //TEMPORARY
   function logout(){
     store.dispatch('access_token', null)
+    store.dispatch('change_auth', false)
     store.dispatch('set_user', null)
+    window.$cookies.remove('logged')
   }
+/*-----------------------------------------------------------------*/ 
+
 </script>
 
 <template>

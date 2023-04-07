@@ -1,5 +1,5 @@
 <script setup>
-  import { computed } from '@vue/reactivity';
+  import { onMounted, computed } from 'vue';
   import { useStore } from 'vuex'
   import HomeDashboard from '@/components/HomeDashboard.vue';
   import HomeHeaderComp from '@/components/HomeHeaderComp.vue';
@@ -8,17 +8,23 @@
   const store = useStore()
   const log = computed(() => store.getters.getAuth)
 
-  /*function setCookie() {
-    var name = 'hello'
-    var value= 'test'
-    var expires = "";
-        var date = new Date();
-        date.setTime(date.getTime() + (1*24*60*60*1000));
-        expires = "; expires=" + date.toUTCString();
-    
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-}*/
+  onMounted(async () => {
+    /*const msg = await fetch('http://localhost:3000/api/user',{
+        headers: {'Content-Type': 'application/json'},
+    });
+    if(msg.status == 200){
+      log.value = !log.value;
+    }*/
+    cookie_exist()
+  });
 
+  function cookie_exist(){
+    if(!window.$cookies.isKey('logged')){
+      store.dispatch('access_token', null)
+      store.dispatch('change_auth', false)
+      store.dispatch('set_user', null)
+    }
+  }
 </script>
 
 <template>
