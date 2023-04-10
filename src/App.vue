@@ -1,5 +1,6 @@
 <script setup>
 import NavigationDrawer from './components/NavigationDrawer.vue';
+
 /*
 export default {
   name: 'App',
@@ -13,7 +14,7 @@ export default {
 <template>
   <v-app>
     <NavigationDrawer/>
-    
+
     <v-main>
       <!--v-container>
         <v-row class="text-center">

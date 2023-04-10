@@ -1,6 +1,18 @@
 <script setup>
   import { computed } from '@vue/reactivity';
   import { useStore } from 'vuex'
+  import { ref } from 'vue';
+  import { useTheme } from "vuetify";
+  
+  const theme = useTheme();
+  var darkMode = ref(true);
+  theme.global.name.value = "dark"
+
+  function toggleTheme(){
+    darkMode.value = !darkMode.value
+    theme.global.name.value = darkMode.value ? "dark" : "light";
+  }
+
   const store = useStore()
   /*onMounted(async () => {
     const msg = await fetch('http://localhost:3000/api/user',{
@@ -10,7 +22,6 @@
       log.value = !log.value;
     }
   });*/
-
   const log = computed(() => store.getters.getAuth)
   const user = computed(() => store.getters.getUser)
 
@@ -46,10 +57,11 @@
     <v-list density="compact" nav>
       <v-list-item prepend-icon="mdi-home" title="Home" value="home" to="/"></v-list-item>
     </v-list>
-    
+ 
     <template v-slot:append>
-      <v-list density="compact" nav v-if="log">
-        <v-list-item @click="logout" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
+      <v-list density="compact" nav>
+        <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Theme" value="theme"></v-list-item>
+        <v-list-item v-if="log" @click="logout" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
       </v-list>
     </template>
     

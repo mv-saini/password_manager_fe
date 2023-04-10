@@ -1,10 +1,13 @@
 <script setup>
     import { computed } from '@vue/reactivity';
-import { reactive } from 'vue';
+    import { reactive } from 'vue';
     import { onMounted, ref } from 'vue';
     import { useStore } from 'vuex';
+    import { useVuelidate } from '@vuelidate/core'
+    import { required, email, helpers } from '@vuelidate/validators' 
 
     const store = useStore()
+    const log = computed(() => store.getters.getAuth)
     var vault = ref(null)
     var site = ref(null)
     var dialog = ref(false)
@@ -19,10 +22,25 @@ import { reactive } from 'vue';
         notes: '',
     })
 
-    onMounted( () => {
-        getVault()
+    const rules = computed(() => {
+        return{
+            name: { required: helpers.withMessage('name is required', required), 
+            },
+            email: { required: helpers.withMessage('email is required', required), 
+                email : helpers.withMessage(' is not a valid email address', email)
+            },
+            password: { required: helpers.withMessage('password is required', required), 
+            },
+        }
     })
-
+    
+    const v$ = useVuelidate(rules, data)
+    
+    onMounted( () => {
+        if(log)
+            getVault()
+    })
+    
     function showDetails(item){
         site.value = item;
         dialog.value = true;
@@ -55,6 +73,12 @@ import { reactive } from 'vue';
         const response = fetch()
     }*/
 
+    async function checkAddRecord(){
+        const result = await v$.value.$validate()
+        if(result)
+            await addRecord()
+    }
+
     async function addRecord(){
         const token = computed(() => store.getters.getToken)
         const response = await fetch(process.env.VUE_APP_VAULT, {
@@ -73,7 +97,6 @@ import { reactive } from 'vue';
         }
         addDialog.value = false
         getVault()
-        
     }
 
     async function deleteRecord(){
@@ -94,7 +117,6 @@ import { reactive } from 'vue';
         getVault()
         
     }
-
 </script>
 
 <template>
@@ -191,12 +213,33 @@ import { reactive } from 'vue';
                                 <v-row>
                                     <v-col cols="12" sm="6" md="4">
                                         <v-text-field label="Name" v-model="data.name"/>
+                                        <div
+                                        class="text-caption text-red"
+                                        v-for="error in v$.name.$errors"
+                                        :key="error.$uid"
+                                        >
+                                            {{ data.name + error.$message }}
+                                        </div>
                                     </v-col>
                                     <v-col cols="12" sm="6" md="4">
                                         <v-text-field label="Email" v-model="data.email"/>
+                                        <div
+                                        class="text-caption text-red"
+                                        v-for="error in v$.email.$errors"
+                                        :key="error.$uid"
+                                        >
+                                            {{ email.name + error.$message }}
+                                        </div>
                                     </v-col>
                                     <v-col cols="12" sm="6" md="4">
                                         <v-text-field label="Password" v-model="data.password"/>
+                                        <div
+                                        class="text-caption text-red"
+                                        v-for="error in v$.password.$errors"
+                                        :key="error.$uid"
+                                        >
+                                            {{ data.password + error.$message }}
+                                        </div>
                                     </v-col>
                                     <v-col cols="12">
                                         <v-text-field label="Link" v-model="data.link"/>
@@ -212,7 +255,7 @@ import { reactive } from 'vue';
                             <v-btn color="blue-darken-1" variant="text" @click="addDialog = false">
                                 Close
                             </v-btn>
-                            <v-btn color="blue-darken-1" variant="text" @click="addRecord()">
+                            <v-btn color="blue-darken-1" variant="text" @click="checkAddRecord()">
                                 Add
                             </v-btn>
                         </v-card-actions>
