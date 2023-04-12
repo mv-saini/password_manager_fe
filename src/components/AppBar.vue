@@ -5,8 +5,8 @@
   import { useTheme } from "vuetify";
   
   const theme = useTheme();
-  var darkMode = ref(true);
-  theme.global.name.value = "dark"
+  var darkMode = ref(false);
+  theme.global.name.value = "light"
 
   function toggleTheme(){
     darkMode.value = !darkMode.value
@@ -23,8 +23,7 @@
     }
   });*/
   const log = computed(() => store.getters.getAuth)
-  const user = computed(() => store.getters.getUser)
-
+  //const user = computed(() => store.getters.getUser)
 
 /*-----------------------------------------------------------------*/ 
   //TEMPORARY
@@ -39,31 +38,18 @@
 </script>
 
 <template>
-    <v-navigation-drawer
-      expand-on-hover
-      rail
-    >
+  <v-app-bar color="blue" prominent>
+    <v-spacer></v-spacer>
+    <v-icon class="mr-5" icon="mdi-security"></v-icon>
+    <v-toolbar-items v-if="log">
+      <v-btn to="dashboard">Dashboard</v-btn>
+      <v-btn to="tools">Tools</v-btn>
+    </v-toolbar-items>
+    <v-spacer></v-spacer>
+    <v-btn @click="toggleTheme" icon="mdi-theme-light-dark"></v-btn>
+    <v-btn v-if="!log" to="login" icon="mdi-account"></v-btn>
+    <v-btn @click="logout" v-else variant="text" icon="mdi-logout"></v-btn>
+    <v-spacer></v-spacer>
+  </v-app-bar>
 
-    <v-list>
-      <v-list-item prepend-icon="mdi-account" title="Login" to="login" v-if="!log"></v-list-item>
-      <v-list-item
-        title="Logged"
-        :subtitle="user"
-        v-else></v-list-item>
-    </v-list>
-
-    <v-divider></v-divider>
-    
-    <v-list density="compact" nav>
-      <v-list-item prepend-icon="mdi-home" title="Home" value="home" to="/"></v-list-item>
-    </v-list>
- 
-    <template v-slot:append>
-      <v-list density="compact" nav>
-        <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Theme" value="theme"></v-list-item>
-        <v-list-item v-if="log" @click="logout" prepend-icon="mdi-logout" title="Logout" value="logout"></v-list-item>
-      </v-list>
-    </template>
-    
-  </v-navigation-drawer>
 </template>

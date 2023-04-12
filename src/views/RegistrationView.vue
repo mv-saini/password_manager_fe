@@ -1,6 +1,5 @@
 <script setup>
   import router from '@/router';
-  import AppLogo from '@/components/AppLogo.vue';
   import { useVuelidate } from '@vuelidate/core'
   import { required, minLength, maxLength, email, sameAs, helpers } from '@vuelidate/validators'
   import { reactive, computed } from 'vue';
@@ -73,8 +72,7 @@
   }
 </script>
 <template>
-    <AppLogo class="mt-16"/>
-    <v-form @submit.prevent="checkSubmit" class="mt-8">
+    <v-form @submit.prevent="checkSubmit" class="mt-16 pt-16">
         <v-container>
             <v-row>
                 <v-col cols="4"/>

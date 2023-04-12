@@ -228,7 +228,7 @@
                                         v-for="error in v$.email.$errors"
                                         :key="error.$uid"
                                         >
-                                            {{ email.name + error.$message }}
+                                            {{ data.email + error.$message }}
                                         </div>
                                     </v-col>
                                     <v-col cols="12" sm="6" md="4">

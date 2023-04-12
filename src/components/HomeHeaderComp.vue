@@ -1,6 +1,5 @@
 <script setup>
   import router from '@/router';
-  import AppLogo from './AppLogo.vue';
   function login(){
     router.push({
       name: 'login'
@@ -14,8 +13,6 @@
 </script>
 <template>
     <v-container class="text-center" style="background-color: #f1f5f8;">
-    
-    <AppLogo/>
 
     <v-row class="pt-8">
       <v-col cols="2"/>

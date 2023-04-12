@@ -1,5 +1,4 @@
 <script setup>
-  import AppLogo from '@/components/AppLogo.vue';
   import router from '@/router';
   import { reactive, ref } from 'vue';
   import { useStore } from 'vuex'
@@ -38,7 +37,7 @@
         store.dispatch('change_auth', true)
         window.$cookies.set('logged', true, '15MIN')
         router.push({
-            name: 'home'
+            name: 'dashboard'
         })
     }
     else if(response.status == 401){
@@ -54,8 +53,6 @@
 
 
 <template>
-    <AppLogo class="mt-16"/>
-
     <v-container v-if="check" class="mt-8">
         <v-row>
             <v-col cols="4"/>
@@ -69,7 +66,7 @@
         </v-row>
     </v-container>
 
-    <v-form @submit.prevent="checkSubmit">
+    <v-form class="mt-16 pt-16" @submit.prevent="checkSubmit">
         <v-container>
             <v-row>
                 <v-col cols="4"/>

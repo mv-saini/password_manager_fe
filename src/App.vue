@@ -1,5 +1,5 @@
 <script setup>
-import NavigationDrawer from './components/NavigationDrawer.vue';
+import NavigationDrawer from './components/AppBar.vue';
 
 /*
 export default {

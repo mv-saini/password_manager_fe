@@ -1,7 +1,6 @@
 <script setup>
   import { onMounted, computed } from 'vue';
   import { useStore } from 'vuex'
-  import HomeDashboard from '@/components/HomeDashboard.vue';
   import HomeHeaderComp from '@/components/HomeHeaderComp.vue';
   import HomeBodyComp from '@/components/HomeBodyComp.vue';
 
@@ -29,6 +28,5 @@
 
 <template>
   <HomeHeaderComp v-if="!log"/>
-  <HomeBodyComp v-if="!log"/>
-  <HomeDashboard v-else/>
+  <HomeBodyComp v-else/>
 </template>
