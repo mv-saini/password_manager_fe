@@ -22,3 +22,6 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Back-End Required
+See https://github.com/Synthetize/password-manager-be.git
