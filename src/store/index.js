@@ -5,10 +5,13 @@ const store = createStore({
     state:{
         token: null,
         authenticated: false,
-        uiLengthMax: 20,
-        uiLengthMin: 8,
         user: null,
-        loadingColor: 'indigo'
+        userName: null,
+        userSurname: null,
+        userInitials: null,
+        loadingColor: 'white',
+        theme: 'dark',
+        darkMode: true,
     },
     getters:{
         getToken(state){
@@ -20,14 +23,23 @@ const store = createStore({
         getUser(state){
             return state.user 
         },
-        getUiLengthMax(state){
-            return state.uiLengthMax
+        getUserName(state){
+            return state.userName 
         },
-        getUiLengthMin(state){
-            return state.uiLengthMin
+        getUserSurname(state){
+            return state.userSurname 
+        },
+        getUserInitials(state){
+            return state.userInitials 
         },
         getLoadingColor(state){
             return state.loadingColor
+        },
+        getTheme(state){
+            return state.theme
+        },
+        getDarkMode(state){
+            return state.darkMode
         }
     },
     mutations:{
@@ -40,9 +52,24 @@ const store = createStore({
         SET_USER(state, user){
             state.user = user
         },
-        CHANGE_LOADING_COLOR(state, update){
-            state.loadingColor = update
+        SET_USER_NAME(state, userName){
+            state.userName = userName
         },
+        SET_USER_SURNAME(state, userSurname){
+            state.userSurname = userSurname
+        },
+        SET_USER_INITIALS(state, userInitials){
+            state.userInitials = userInitials
+        },
+        CHANGE_THEME(state, theme){
+            state.theme = theme
+        },
+        CHANGE_LOADING_COLOR(state, color){
+            state.loadingColor = color
+        },
+        IS_DARK(state, darkMode){
+            state.darkMode = darkMode
+        }
     },
     actions:{
         access_token({ commit }, token){
@@ -54,9 +81,24 @@ const store = createStore({
         set_user({ commit }, user){
             commit('SET_USER', user)
         },
-        change_loading_color({ commit }, update){
-            commit('CHANGE_LOADING_COLOR', update)
+        set_user_name({ commit }, userName){
+            commit('SET_USER_NAME', userName)
         },
+        set_user_surname({ commit }, userSurname){
+            commit('SET_USER_SURNAME', userSurname)
+        },
+        set_user_initials({ commit }, userInitials){
+            commit('SET_USER_INITIALS', userInitials)
+        },
+        change_theme({ commit }, theme){
+            commit('CHANGE_THEME', theme)
+        },
+        change_loading_color({ commit }, color){
+            commit('CHANGE_LOADING_COLOR', color)
+        },
+        is_dark({ commit }, darkMode){
+            commit('IS_DARK', darkMode)
+        }
     },
     plugins: [createPersistedState()],
 })

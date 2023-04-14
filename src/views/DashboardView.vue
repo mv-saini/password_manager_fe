@@ -6,7 +6,6 @@
     import { required, email, helpers } from '@vuelidate/validators' 
 
     const store = useStore()
-    const log = computed(() => store.getters.getAuth)
 
     var vault = ref([])
     var site = ref(null)
@@ -16,6 +15,10 @@
     var lastOP = ref(false)
     const loadingColor = computed(() => store.getters.getLoadingColor)
 
+    //for tags
+    //var itemsKappa = ref([])
+    //var valueKappa = ref([])
+    
     //for checkboxes
     var allSelected = ref(false)
     var selectedItems = ref([])
@@ -36,12 +39,15 @@
 
     const rules = computed(() => {
         return{
-            name: { required: helpers.withMessage('name is required', required), 
+            name: { 
+                required: helpers.withMessage('name is required', required), 
             },
-            email: { required: helpers.withMessage('email is required', required), 
+            email: { 
+                required: helpers.withMessage('email is required', required), 
                 email : helpers.withMessage(' is not a valid email address', email)
             },
-            password: { required: helpers.withMessage('password is required', required), 
+            password: { 
+                required: helpers.withMessage('password is required', required), 
             },
         }
     })
@@ -49,7 +55,7 @@
     const v$ = useVuelidate(rules, data)
     
     onMounted( () => {
-        if(log)
+        if(computed(() => store.getters.getAuth).value)
             getVault()
     })
 
@@ -78,14 +84,13 @@
     }
 
     function optionExe(index, val){
-        if(index == 0) navigator.clipboard.writeText(val.email)  
+        if(index == 0) navigator.clipboard.writeText(val.email)
         else if(index == 1) navigator.clipboard.writeText(val.password) 
-        else if(index == 2) deleteRecord(val._id)
+        else if(index == 2) deleteRecord([val._id])
     }
 
     function deleteSelected(){
-        console.log("elements to be deleted: ")
-        console.log(selectedItems.value)
+        deleteRecord(selectedItems.value)
     }
     
     function showDetails(item){
@@ -112,9 +117,27 @@
         }
     }
 
-    /*async function update(){
-        const response = fetch()
-    }*/
+    async function update(){
+        const modifiedData =
+        {
+            'name': site.value.name,
+            'email': site.value.email,
+            'password': site.value.password,
+            'link': site.value.link,
+            'notes': site.value.notes,
+        }
+        const response = await fetch(process.env.VUE_APP_VAULT + '/' + site.value._id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
+            },
+            body: JSON.stringify(modifiedData)
+        })
+        lastOP.value = response.status === 200
+        getVault()
+        dialog.value = false
+    }
 
     async function checkAddRecord(){
         const result = await v$.value.$validate()
@@ -123,43 +146,30 @@
     }
 
     async function addRecord(){
-        const token = computed(() => store.getters.getToken)
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token.value,
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
             body: JSON.stringify(data)
         })
-        if(response.status == 201){
-            lastOP.value = true
-        }
-        else{
-            lastOP.value = false
-        }
-        addDialog.value = false
+        lastOP.value = response.status === 200
         getVault()
+        addDialog.value = false
     }
 
     async function deleteRecord(id){
-        console.log(JSON.stringify(id))
-        const token = computed(() => store.getters.getToken)
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token.value,
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
             credentials: 'include',
-            body: JSON.stringify(id)
+            body: JSON.stringify({"elements" : id})
         })
-        if(response.status == 200){
-            lastOP.value = true
-        }
-        else{
-            lastOP.value = false
-        }
+        lastOP.value = response.status === 200
         getVault()
     }
 </script>
@@ -261,12 +271,18 @@
         <v-card>
             <v-card-title class="d-flex align-self-center">
                 <div class="mt-1 pt-1 text-h5">
-                    {{ site.name }}
+                    Details 
                 </div>
             </v-card-title>
             <v-card-text>
                 <v-container>
                     <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Name" v-model="site.name"/>
+                        </v-col>
+                        <!--v-col cols="12" sm="6">
+                            <v-select v-model="valueKappa" :items="itemsKappa" chips label="Tags" multiple/>
+                        </v-col-->
                         <v-col cols="12" sm="6">
                             <v-text-field label="Email" v-model="site.email"/>
                         </v-col>
@@ -287,7 +303,7 @@
                 <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
                     Close
                 </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
+                <v-btn color="blue-darken-1" variant="text" @click="update">
                     Update
                 </v-btn>
             </v-card-actions>

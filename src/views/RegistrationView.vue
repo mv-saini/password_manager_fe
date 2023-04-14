@@ -3,12 +3,9 @@
   import { useVuelidate } from '@vuelidate/core'
   import { required, minLength, maxLength, email, sameAs, helpers } from '@vuelidate/validators'
   import { reactive, computed } from 'vue';
-  import { useStore } from 'vuex';
 
-  const store = useStore()
-
-  const uiLengthMax = computed(() => store.getters.getUiLengthMax)
-  const uiLengthMin = computed(() => store.getters.getUiLengthMin)
+  const uiLengthMax = 20
+  const uiLengthMin = 8
 
   const data = reactive({
     name: '',
@@ -21,8 +18,8 @@
 
   const rules = computed(() => {
     return{
-        name: { required: helpers.withMessage('name is required', required), 
-            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax.value, maxLength(uiLengthMax.value))  
+        name: { required: helpers.withMessage('Name is required', required), 
+            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax))  
         },
         surname: { required: helpers.withMessage('surname is required', required), 
             maxLength: maxLength(uiLengthMax) 
@@ -31,8 +28,8 @@
             email : helpers.withMessage(' is not a valid email address', email)
         },
         password: { required: helpers.withMessage('password is required', required), 
-            minLength: helpers.withMessage('The minimum length allowed is ' + uiLengthMin.value, minLength(uiLengthMin.value)), 
-            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax.value, maxLength(uiLengthMax.value)) ,
+            minLength: helpers.withMessage('The minimum length allowed is ' + uiLengthMin, minLength(uiLengthMin)), 
+            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax)) ,
             valid: helpers.withMessage('the password must contain atleast a lowercase letter, uppercase letter, a number and a symbol',
             function(value) {
                 const containsUppercase = /[A-Z]/.test(value)

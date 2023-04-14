@@ -35,9 +35,9 @@
         store.dispatch('set_user', resData.email)
         store.dispatch('access_token', resData.accessToken)
         store.dispatch('change_auth', true)
-        window.$cookies.set('logged', true, '15MIN')
+        window.$cookies.set('logged', true, '7d')
         router.push({
-            name: 'dashboard'
+            path: new URLSearchParams(window.location.search).get('redirect')  || '/dashboard'
         })
     }
     else if(response.status == 401){
