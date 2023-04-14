@@ -8,6 +8,7 @@ const store = createStore({
         uiLengthMax: 20,
         uiLengthMin: 8,
         user: null,
+        loadingColor: 'indigo'
     },
     getters:{
         getToken(state){
@@ -25,6 +26,9 @@ const store = createStore({
         getUiLengthMin(state){
             return state.uiLengthMin
         },
+        getLoadingColor(state){
+            return state.loadingColor
+        }
     },
     mutations:{
         ACCESS_TOKEN(state, token){
@@ -35,7 +39,10 @@ const store = createStore({
         },
         SET_USER(state, user){
             state.user = user
-        }
+        },
+        CHANGE_LOADING_COLOR(state, update){
+            state.loadingColor = update
+        },
     },
     actions:{
         access_token({ commit }, token){
@@ -46,7 +53,10 @@ const store = createStore({
         },
         set_user({ commit }, user){
             commit('SET_USER', user)
-        }
+        },
+        change_loading_color({ commit }, update){
+            commit('CHANGE_LOADING_COLOR', update)
+        },
     },
     plugins: [createPersistedState()],
 })

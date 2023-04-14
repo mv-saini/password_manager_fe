@@ -1,28 +1,30 @@
 <script setup>
   import { computed } from '@vue/reactivity';
   import { useStore } from 'vuex'
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useTheme } from "vuetify";
   
   const theme = useTheme();
-  var darkMode = ref(false);
-  theme.global.name.value = "light"
+  var darkMode = ref(true);
+  theme.global.name.value = "dark"
 
   function toggleTheme(){
     darkMode.value = !darkMode.value
     theme.global.name.value = darkMode.value ? "dark" : "light";
+    loadingColor()
+  }
+
+  function loadingColor(){
+    if(darkMode.value) store.dispatch('change_loading_color', 'white')
+    else store.dispatch('change_loading_color', 'indigo')
   }
 
   const store = useStore()
-  /*onMounted(async () => {
-    const msg = await fetch('http://localhost:3000/api/user',{
-        headers: {'Content-Type': 'application/json'},
-    });
-    if(msg.status == 200){
-      log.value = !log.value;
-    }
-  });*/
   const log = computed(() => store.getters.getAuth)
+  onMounted(() => {
+    loadingColor()
+  });
+  
   //const user = computed(() => store.getters.getUser)
 
 /*-----------------------------------------------------------------*/ 

@@ -14,6 +14,7 @@
     var dialog = ref(false)
     var addDialog = ref(false)
     var lastOP = ref(false)
+    const loadingColor = computed(() => store.getters.getLoadingColor)
 
     //for checkboxes
     var allSelected = ref(false)
@@ -57,7 +58,7 @@
 
         if (!allSelected.value) {
             vault.value.forEach(item => {
-                selectedItems.value.push(item.element_id)
+                selectedItems.value.push(item._id)
             });
         }
     }
@@ -68,6 +69,10 @@
         }
     })
 
+    watch(lastOP, () => {
+        setTimeout(() => lastOP.value = false, 1000);
+    })
+
     function select(){
         allSelected.value = false
     }
@@ -75,7 +80,7 @@
     function optionExe(index, val){
         if(index == 0) navigator.clipboard.writeText(val.email)  
         else if(index == 1) navigator.clipboard.writeText(val.password) 
-        else if(index == 2) deleteRecord(val)
+        else if(index == 2) deleteRecord(val._id)
     }
 
     function deleteSelected(){
@@ -137,13 +142,17 @@
         getVault()
     }
 
-    async function deleteRecord(val){
+    async function deleteRecord(id){
+        console.log(JSON.stringify(id))
         const token = computed(() => store.getters.getToken)
-        const response = await fetch(process.env.VUE_APP_VAULT  + '/' + val.element_id, {
+        const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'DELETE',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token.value,
             },
+            credentials: 'include',
+            body: JSON.stringify(id)
         })
         if(response.status == 200){
             lastOP.value = true
@@ -151,13 +160,13 @@
         else{
             lastOP.value = false
         }
-        dialog.value = false
         getVault()
-        
     }
 </script>
 
 <template>
+    <v-progress-linear v-if="lastOP" :color="loadingColor" indeterminate></v-progress-linear>
+    <v-progress-linear v-else color="white"></v-progress-linear>
     <v-container class="mt-16 ">
         <v-row>
             <v-col cols="4">
@@ -174,6 +183,7 @@
                             </VSheet>
                         </div>
                     </v-col>
+                    <v-divider :thickness="1" class="border-opacity-100"></v-divider>
                 </v-row>
             </v-col>
             <v-col cols="4">
@@ -199,7 +209,7 @@
                             </template> 
                             <v-list>
                                 <v-list-item @click="deleteSelected()">
-                                    <v-list-item-title>Delete Selected</v-list-item-title>
+                                    <v-list-item-title>Delete Selected ({{ selectedItems.length }})</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -210,21 +220,23 @@
             <v-col cols="4"></v-col>
         </v-row>
 
-        <v-row v-for="item in vault" :key="item.element_id">
+        <v-row v-for="item in vault" :key="item._id">
             <v-col cols="4"></v-col>
             <v-col cols="4">
                 <v-row class="d-flex justify-center align-center">
                     <v-col cols="2">
-                        <v-checkbox class="mt-5" v-model="selectedItems" @click="select" :value="item.element_id"></v-checkbox>
+                        <v-checkbox class="mt-5" v-model="selectedItems" @click="select" :value="item._id"></v-checkbox>
                     </v-col>
                     <v-col cols="8">
                         <div @click="showDetails(item)" class="text-start align-center d-flex flex-row unselectable changePointer">
                             <v-icon size="small" icon="mdi-account"></v-icon>
                             <div class="pa-3 text-h6 ">
                                 {{ item.name }} 
+                                <div class="text-caption">
+                                    {{ item.email }}
+                                </div>
                             </div>
                         </div>
-                        
                     </v-col>
                     <v-col cols="2">
                         <v-menu>

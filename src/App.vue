@@ -1,5 +1,5 @@
 <script setup>
-import NavigationDrawer from './components/AppBar.vue';
+import AppBar from './components/AppBar.vue';
 
 /*
 export default {
@@ -13,7 +13,7 @@ export default {
 
 <template>
   <v-app>
-    <NavigationDrawer/>
+    <AppBar/>
 
     <v-main>
       <!--v-container>
