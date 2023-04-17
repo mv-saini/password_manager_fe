@@ -15,9 +15,14 @@
     var lastOP = ref(false)
     const loadingColor = computed(() => store.getters.getLoadingColor)
 
-    //for tags
-    //var itemsKappa = ref([])
-    //var valueKappa = ref([])
+    var folders = ref([])
+    var elements = ref([
+        {icon: 'mdi-account', text: 'All'},
+        {icon: 'mdi-star', text: 'Favorite'},
+        {icon: 'mdi-credit-card', text: 'Credit Card'},
+        {icon: 'mdi-card-account-details', text: 'Identity'},
+        {icon: 'mdi-note', text: 'Notes'},
+    ])
     
     //for checkboxes
     var allSelected = ref(false)
@@ -35,6 +40,7 @@
         password: '',
         link: '',
         notes: '',
+        tag: [],
     })
 
     const rules = computed(() => {
@@ -48,7 +54,7 @@
             },
             password: { 
                 required: helpers.withMessage('password is required', required), 
-            },
+            }
         }
     })
     
@@ -110,11 +116,20 @@
         if(response.status == 200){
             const data = await response.json()
             vault.value = data.vault
+            vault.value.forEach(record => setTags(record.tag))
             lastOP.value = true
         }
         else{
             lastOP.value = false
         }
+    }
+
+    function setTags(tags){
+        tags.map((tag) => {
+            if(folders.value.find(x => x == tag) == undefined){
+                folders.value.push(tag)
+            }
+        })
     }
 
     async function update(){
@@ -125,6 +140,7 @@
             'password': site.value.password,
             'link': site.value.link,
             'notes': site.value.notes,
+            'tag': site.value.tag
         }
         const response = await fetch(process.env.VUE_APP_VAULT + '/' + site.value._id, {
             method: 'PUT',
@@ -179,9 +195,50 @@
     <v-progress-linear v-else color="white"></v-progress-linear>
     <v-container class="mt-16 ">
         <v-row>
-            <v-col cols="4">
+            <!--1st-->
+            <v-col cols="4" class="d-flex flex-column unselectable">
+                <v-row>
+                    <v-col cols="6"></v-col>
+                    <v-col cols="6">
+                        <div border rounded class="pa-6 mx-auto" max-width="400">
+                            <div class="px-2 text-h6 font-weight-bold">
+                                Filter
+                                <v-divider thickness="1"></v-divider>
+                            </div>
+                            
+                            <div class="px-2 text-subtitle-1 font-weight-light">
+                                <div>
+                                    All elements
+                                </div>
+                                <div class="pl-6 popOut changePointer" v-for="(element, index) in elements" :key="index">
+                                    <v-icon size="small" :icon="element.icon"></v-icon>
+                                    {{ element.text }}
+                                </div>
+                            </div>
+                            <v-divider thickness="1"></v-divider>
+                            <div class="text-subtitle-1 font-weight-light">
+                                <div class="px-2 pt-1 d-flex"> 
+                                    <div>
+                                        All folders
+                                    </div>
+                                    <v-spacer/>
+                                    <div>
+                                        <v-btn size="x-small" style="color: #2196f3;" icon="mdi-plus"/>
+                                    </div>
+                                </div>
+                                <div class="pl-6 popOut changePointer" v-for="(folder, index) in folders" :key="index">
+                                    <v-icon size="small" icon="mdi-folder"></v-icon>
+                                    {{ folder }}
+                                </div>
+                            </div>
+                        </div>
+                    </v-col>
+                </v-row>
             </v-col>
-            <v-col cols="4"  class="d-flex">
+
+            <!--2nd-->
+            <v-col cols="4" class="d-flex flex-column">
+                <!--DASHBOARD ROW-->
                 <v-row>
                     <v-col cols="6">
                         <div class="text-h3 font-weight-light">Dashboard</div>
@@ -189,20 +246,16 @@
                     <v-col class="d-flex justify-end" cols="6">
                         <div>
                             <VSheet class="ma-1 pa-1">
-                                <v-btn variant="outlined" prepend-icon="mdi-plus" @click="addDialog = !addDialog">Add new</v-btn>
+                                <v-btn color="#2196f3" style="color: white;" prepend-icon="mdi-plus" @click="addDialog = !addDialog">
+                                    Add new
+                                </v-btn>
                             </VSheet>
                         </div>
                     </v-col>
-                    <v-divider :thickness="1" class="border-opacity-100"></v-divider>
+                    <v-divider thickness="1" class="border-opacity-100"></v-divider>
                 </v-row>
-            </v-col>
-            <v-col cols="4">
-            </v-col>
-        </v-row>
 
-        <v-row>
-            <v-col cols="4"></v-col>
-            <v-col cols="4" class="d-flex">
+                <!--NAME ROW-->
                 <v-row class="d-flex justify-center align-center">
                     <v-col cols="2">
                         <v-checkbox class="mt-5" @click="selectAll" v-model="allSelected"></v-checkbox>
@@ -226,44 +279,45 @@
                     </v-col>
                     <v-divider :thickness="1" class="border-opacity-100"></v-divider>
                 </v-row>
-            </v-col>
-            <v-col cols="4"></v-col>
-        </v-row>
 
-        <v-row v-for="item in vault" :key="item._id">
-            <v-col cols="4"></v-col>
-            <v-col cols="4">
-                <v-row class="d-flex justify-center align-center">
-                    <v-col cols="2">
-                        <v-checkbox class="mt-5" v-model="selectedItems" @click="select" :value="item._id"></v-checkbox>
-                    </v-col>
-                    <v-col cols="8">
-                        <div @click="showDetails(item)" class="text-start align-center d-flex flex-row unselectable changePointer">
-                            <v-icon size="small" icon="mdi-account"></v-icon>
-                            <div class="pa-3 text-h6 ">
-                                {{ item.name }} 
-                                <div class="text-caption">
-                                    {{ item.email }}
+                <v-row v-for="item in vault" :key="item._id">
+                    <v-col>
+                        <v-row class="d-flex justify-center align-center">
+                            <v-col cols="2">
+                                <v-checkbox class="mt-5" v-model="selectedItems" @click="select" :value="item._id"></v-checkbox>
+                            </v-col>
+                            <v-col cols="8">
+                                <div @click="showDetails(item)" class="popOut text-start align-center d-flex flex-row unselectable changePointer">
+                                    <v-icon size="small" icon="mdi-account"></v-icon>
+                                    <div class="pa-3 text-h6 ">
+                                        {{ item.name }} 
+                                        <div class="text-caption">
+                                            {{ item.email }}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </v-col>
+                            <v-col cols="2">
+                                <v-menu>
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                                    </template> 
+                                    <v-list>
+                                        <v-list-item v-for="(option, index) in options" :key="index" :value="index" @click="optionExe(index, item)">
+                                            <v-list-item-title>{{ option.title }}</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                            </v-col>
+                            <v-divider :thickness="1" class="border-opacity-100"></v-divider>
+                        </v-row>
                     </v-col>
-                    <v-col cols="2">
-                        <v-menu>
-                            <template v-slot:activator="{ props }">
-                                <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
-                            </template> 
-                            <v-list>
-                                <v-list-item v-for="(option, index) in options" :key="index" :value="index" @click="optionExe(index, item)">
-                                    <v-list-item-title>{{ option.title }}</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
-                    </v-col>
-                    <v-divider :thickness="1" class="border-opacity-100"></v-divider>
                 </v-row>
             </v-col>
-            <v-col cols="4"></v-col>
+
+            <!--3rd-->
+            <v-col cols="4">
+            </v-col>
         </v-row>
     </v-container>
 
@@ -271,7 +325,7 @@
         <v-card>
             <v-card-title class="d-flex align-self-center">
                 <div class="mt-1 pt-1 text-h5">
-                    Details 
+                    Details
                 </div>
             </v-card-title>
             <v-card-text>
@@ -280,9 +334,9 @@
                         <v-col cols="12" sm="6">
                             <v-text-field label="Name" v-model="site.name"/>
                         </v-col>
-                        <!--v-col cols="12" sm="6">
-                            <v-select v-model="valueKappa" :items="itemsKappa" chips label="Tags" multiple/>
-                        </v-col-->
+                        <v-col cols="12" sm="6">
+                            <v-combobox v-model="site.tag" :items="folders" label="Tags" chips multiple/>
+                        </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field label="Email" v-model="site.email"/>
                         </v-col>
@@ -320,19 +374,22 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                    <v-col cols="12" sm="6" md="4">
+                    <v-col cols="12" sm="6">
                         <v-text-field label="Name" v-model="data.name"/>
                         <div class="text-caption text-red" v-for="error in v$.name.$errors" :key="error.$uid">
                             {{ data.name + error.$message }}
                         </div>
                     </v-col>
-                    <v-col cols="12" sm="6" md="4">
+                    <v-col cols="12" sm="6">
+                            <v-combobox v-model="data.tag" :items="folders" label="Tags" chips multiple/>
+                        </v-col>
+                    <v-col cols="12" sm="6">
                         <v-text-field label="Email" v-model="data.email"/>
                         <div class="text-caption text-red" v-for="error in v$.email.$errors" :key="error.$uid">
                             {{ data.email + error.$message }}
                         </div>
                     </v-col>
-                    <v-col cols="12" sm="6" md="4">
+                    <v-col cols="12" sm="6">
                         <v-text-field label="Password" v-model="data.password"/>
                         <div class="text-caption text-red" v-for="error in v$.password.$errors" :key="error.$uid">
                             {{ data.password + error.$message }}
@@ -365,11 +422,20 @@
         cursor: pointer;
     }
     .unselectable {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .popOut{
+        transition: 0.15s;
+    }
+
+    .popOut:hover{
+        color: #2196f3;
+        transform: scale(1.02);
+    }
 </style>

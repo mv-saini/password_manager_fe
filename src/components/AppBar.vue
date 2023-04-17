@@ -30,6 +30,9 @@
     store.dispatch('access_token', null)
     store.dispatch('change_auth', false)
     store.dispatch('set_user', null)
+    store.dispatch('set_user_initials', null)
+    store.dispatch('set_user_name', null)
+    store.dispatch('set_user_surname', null)
     window.$cookies.remove('logged')
     router.push({
       name: 'home'
@@ -53,14 +56,18 @@
       <template v-slot:activator="{ props }">
         <v-btn v-bind="props">
           <v-avatar color="blue-darken-4" size="small">
-            <span class="text-caption">MS</span> <!--INITIAL GOES HERE-->
+            <span class="text-caption">
+              {{ computed(() => store.getters.getUserName).value[0].toUpperCase() + computed(() => store.getters.getUserSurname).value[0].toUpperCase() }}
+            </span>
           </v-avatar>
         </v-btn>
       </template>
       <v-card>
         <v-card-text>
           <div class="mx-auto text-center">
-              <h3>FULL NAME</h3>  <!--FULL NAME GOES HERE-->
+              <h3>
+                {{ computed(() => store.getters.getUserName).value + ' ' + computed(() => store.getters.getUserSurname).value }}
+              </h3> 
               <p class="text-caption mt-1">
                 {{ computed(() => store.getters.getUser).value }}
               </p>

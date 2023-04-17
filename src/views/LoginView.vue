@@ -34,6 +34,8 @@
         const resData = await response.json()
         store.dispatch('set_user', resData.email)
         store.dispatch('access_token', resData.accessToken)
+        store.dispatch('set_user_name', resData.name)
+        store.dispatch('set_user_surname', resData.surname)
         store.dispatch('change_auth', true)
         window.$cookies.set('logged', true, '7d')
         router.push({

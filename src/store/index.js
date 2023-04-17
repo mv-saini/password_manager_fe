@@ -8,7 +8,6 @@ const store = createStore({
         user: null,
         userName: null,
         userSurname: null,
-        userInitials: null,
         loadingColor: 'white',
         theme: 'dark',
         darkMode: true,
@@ -28,9 +27,6 @@ const store = createStore({
         },
         getUserSurname(state){
             return state.userSurname 
-        },
-        getUserInitials(state){
-            return state.userInitials 
         },
         getLoadingColor(state){
             return state.loadingColor
@@ -58,9 +54,6 @@ const store = createStore({
         SET_USER_SURNAME(state, userSurname){
             state.userSurname = userSurname
         },
-        SET_USER_INITIALS(state, userInitials){
-            state.userInitials = userInitials
-        },
         CHANGE_THEME(state, theme){
             state.theme = theme
         },
@@ -86,9 +79,6 @@ const store = createStore({
         },
         set_user_surname({ commit }, userSurname){
             commit('SET_USER_SURNAME', userSurname)
-        },
-        set_user_initials({ commit }, userInitials){
-            commit('SET_USER_INITIALS', userInitials)
         },
         change_theme({ commit }, theme){
             commit('CHANGE_THEME', theme)

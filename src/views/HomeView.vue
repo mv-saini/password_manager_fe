@@ -1,6 +1,6 @@
 <script setup>
-  import HomeViewHeader from '@/components/HomeViewHeader.vue.js';
-  import HomeViewBody from '@/components/HomeViewBody.vue.js';
+  import HomeViewHeader from '@/components/HomeViewHeader.vue';
+  import HomeViewBody from '@/components/HomeViewBody.vue';
 </script>
 
 <template>
