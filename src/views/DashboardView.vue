@@ -15,10 +15,13 @@
     var lastOP = ref(false)
     const loadingColor = computed(() => store.getters.getLoadingColor)
 
-    var folders = ref([])
+    var filteredList = ref([])
+    const lastFolder = ref('')
+    const folders = ref([])
+
     var elements = ref([
-        {icon: 'mdi-account', text: 'All'},
         {icon: 'mdi-star', text: 'Favorite'},
+        {icon: 'mdi-account', text: 'Accounts'},
         {icon: 'mdi-credit-card', text: 'Credit Card'},
         {icon: 'mdi-card-account-details', text: 'Identity'},
         {icon: 'mdi-note', text: 'Notes'},
@@ -41,6 +44,7 @@
         link: '',
         notes: '',
         tag: [],
+        type: [],
     })
 
     const rules = computed(() => {
@@ -60,9 +64,11 @@
     
     const v$ = useVuelidate(rules, data)
     
-    onMounted( () => {
-        if(computed(() => store.getters.getAuth).value)
-            getVault()
+    onMounted(async () => {
+        if(computed(() => store.getters.getAuth).value){
+            await getVault()
+            filter('All')
+        }
     })
 
     function selectAll(){
@@ -92,7 +98,9 @@
     function optionExe(index, val){
         if(index == 0) navigator.clipboard.writeText(val.email)
         else if(index == 1) navigator.clipboard.writeText(val.password) 
-        else if(index == 2) deleteRecord([val._id])
+        else if(index == 2){
+            deleteRecord([val._id])
+        }
     }
 
     function deleteSelected(){
@@ -104,7 +112,40 @@
         dialog.value = true;
     }
 
+    function filter(folder){
+        lastFolder.value = folder
+        filteredList.value = []
+        if(folder == 'All' || !folderExists()){
+            filteredList.value = vault.value
+        }
+        else{
+            vault.value.map(element => {
+                //rewrite this
+                element.tag.map(tag => {
+                    if(tag == folder){
+                        filteredList.value.push(element)
+                    }
+                })
+                element.type.map(type => {
+                    if(type == folder){
+                        filteredList.value.push(element)
+                    }
+                })
+            })
+        }
+    }
+
+    function folderExists(){
+        if(elements.value.find(element => element.text == lastFolder.value) == undefined){
+            if(folders.value.find(folder => folder == lastFolder.value) == undefined){
+                return false
+            }
+        }
+        return true
+    }
+
     async function getVault(){
+        vault.value = []
         const token = computed(() => store.getters.getToken)
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'GET',
@@ -116,6 +157,7 @@
         if(response.status == 200){
             const data = await response.json()
             vault.value = data.vault
+            folders.value = []
             vault.value.forEach(record => setTags(record.tag))
             lastOP.value = true
         }
@@ -126,9 +168,9 @@
 
     function setTags(tags){
         tags.map((tag) => {
-            if(folders.value.find(x => x == tag) == undefined){
+            if(folders.value.find(x => x == tag) == undefined) 
                 folders.value.push(tag)
-            }
+            //if(elements.value.find(x => x.text == tag) == undefined) elements.value.push({icon: 'mdi-account', text: tag})
         })
     }
 
@@ -140,8 +182,10 @@
             'password': site.value.password,
             'link': site.value.link,
             'notes': site.value.notes,
-            'tag': site.value.tag
+            'tag': site.value.tag,
+            'type': site.value.type,
         }
+        console.log(site.value.type)
         const response = await fetch(process.env.VUE_APP_VAULT + '/' + site.value._id, {
             method: 'PUT',
             headers: {
@@ -151,7 +195,8 @@
             body: JSON.stringify(modifiedData)
         })
         lastOP.value = response.status === 200
-        getVault()
+        await getVault()
+        filter(lastFolder.value)
         dialog.value = false
     }
 
@@ -171,8 +216,14 @@
             body: JSON.stringify(data)
         })
         lastOP.value = response.status === 200
-        getVault()
+        await getVault()
+        filter(lastFolder.value)
+        clearData()
         addDialog.value = false
+    }
+
+    function clearData(){
+        data.email = ''
     }
 
     async function deleteRecord(id){
@@ -186,7 +237,8 @@
             body: JSON.stringify({"elements" : id})
         })
         lastOP.value = response.status === 200
-        getVault()
+        await getVault()
+        filter(lastFolder.value)
     }
 </script>
 
@@ -210,14 +262,18 @@
                                 <div>
                                     All elements
                                 </div>
-                                <div class="pl-6 popOut changePointer" v-for="(element, index) in elements" :key="index">
+                                <div class="pl-6 popOut changePointer" @click="filter('All')">
+                                    <v-icon size="small" icon="mdi-set-all"></v-icon>
+                                    All
+                                </div>
+                                <div class="pl-6 popOut changePointer" @click="filter(element.text)" v-for="element in elements" :key="element.text">
                                     <v-icon size="small" :icon="element.icon"></v-icon>
                                     {{ element.text }}
                                 </div>
                             </div>
                             <v-divider thickness="1"></v-divider>
-                            <div class="text-subtitle-1 font-weight-light">
-                                <div class="px-2 pt-1 d-flex"> 
+                            <div class="px-2 pt-1 text-subtitle-1 font-weight-light">
+                                <div class="d-flex"> 
                                     <div>
                                         All folders
                                     </div>
@@ -226,7 +282,7 @@
                                         <v-btn size="x-small" style="color: #2196f3;" icon="mdi-plus"/>
                                     </div>
                                 </div>
-                                <div class="pl-6 popOut changePointer" v-for="(folder, index) in folders" :key="index">
+                                <div class="pl-6 popOut changePointer" @click="filter(folder)" v-for="folder in folders" :key="folder">
                                     <v-icon size="small" icon="mdi-folder"></v-icon>
                                     {{ folder }}
                                 </div>
@@ -280,7 +336,24 @@
                     <v-divider :thickness="1" class="border-opacity-100"></v-divider>
                 </v-row>
 
-                <v-row v-for="item in vault" :key="item._id">
+                <v-row v-if="filteredList.length == 0">
+                    <v-col>
+                        <v-row class="d-flex justify-center align-center">
+                            <v-col cols="2"></v-col>
+                            <v-col cols="8">
+                                <div class="text-start align-center justify-center d-flex flex-row">
+                                    <div class="pa-3 text-h6 ">
+                                         
+                                    </div>
+                                </div>
+                            </v-col>
+                            <v-col cols="2"></v-col>
+                            <v-divider thickness="1" class="border-opacity-100"></v-divider>
+                        </v-row>
+                    </v-col>
+                </v-row>
+
+                <v-row v-for="item in filteredList" :key="item._id" v-else>
                     <v-col>
                         <v-row class="d-flex justify-center align-center">
                             <v-col cols="2">
@@ -309,7 +382,7 @@
                                     </v-list>
                                 </v-menu>
                             </v-col>
-                            <v-divider :thickness="1" class="border-opacity-100"></v-divider>
+                            <v-divider thickness="1" class="border-opacity-100"></v-divider>
                         </v-row>
                     </v-col>
                 </v-row>
@@ -334,8 +407,11 @@
                         <v-col cols="12" sm="6">
                             <v-text-field label="Name" v-model="site.name"/>
                         </v-col>
-                        <v-col cols="12" sm="6">
+                        <v-col cols="12" sm="6" md="3">
                             <v-combobox v-model="site.tag" :items="folders" label="Tags" chips multiple/>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="3">
+                            <v-select v-model="site.type" :items="elements" item-title="text" item-value="text" label="Type" chips multiple/>
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field label="Email" v-model="site.email"/>
@@ -357,7 +433,7 @@
                 <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
                     Close
                 </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="update">
+                <v-btn color="blue-darken-1" variant="text" @click="update()">
                     Update
                 </v-btn>
             </v-card-actions>
@@ -375,14 +451,17 @@
                 <v-container>
                     <v-row>
                     <v-col cols="12" sm="6">
-                        <v-text-field label="Name" v-model="data.name"/>
+                        <v-text-field clearable label="Name" v-model="data.name"/>
                         <div class="text-caption text-red" v-for="error in v$.name.$errors" :key="error.$uid">
                             {{ data.name + error.$message }}
                         </div>
                     </v-col>
-                    <v-col cols="12" sm="6">
-                            <v-combobox v-model="data.tag" :items="folders" label="Tags" chips multiple/>
-                        </v-col>
+                    <v-col cols="12" sm="6" md="3">
+                        <v-combobox v-model="data.tag" :items="folders" label="Tags" chips multiple/>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="3">
+                        <v-select v-model="data.type" :items="elements" item-title="text" item-value="text" label="Type" chips multiple/>
+                    </v-col>
                     <v-col cols="12" sm="6">
                         <v-text-field label="Email" v-model="data.email"/>
                         <div class="text-caption text-red" v-for="error in v$.email.$errors" :key="error.$uid">
