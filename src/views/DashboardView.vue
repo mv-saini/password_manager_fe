@@ -3,10 +3,10 @@
     import { onMounted, ref, watch, reactive } from 'vue';
     import { useStore } from 'vuex';
     import { useVuelidate } from '@vuelidate/core'
-    import { required, email, helpers } from '@vuelidate/validators' 
+    import { required, email, helpers } from '@vuelidate/validators'
 
     const store = useStore()
-
+    
     var vault = ref([])
     var site = ref(null)
 
@@ -240,39 +240,40 @@
         await getVault()
         filter(lastFolder.value)
     }
+    //d-none d-lg-flex
 </script>
 
 <template>
     <v-progress-linear v-if="lastOP" :color="loadingColor" indeterminate></v-progress-linear>
     <v-progress-linear v-else color="white"></v-progress-linear>
-    <v-container class="mt-16 ">
+    <v-container class="mt-16">
         <v-row>
             <!--1st-->
             <v-col cols="4" class="d-flex flex-column unselectable">
                 <v-row>
-                    <v-col cols="6"></v-col>
-                    <v-col cols="6">
-                        <div border rounded class="pa-6 mx-auto" max-width="400">
-                            <div class="px-2 text-h6 font-weight-bold">
+                    <v-col md="6" class="d-none d-lg-flex"></v-col>
+                    <v-col cols="12" md="6" >
+                        <div rounded class="pa-lg-6 mx-auto" max-width="400">
+                            <div class="px-lg-2 text-h6 font-weight-bold">
                                 Filter
                                 <v-divider thickness="1"></v-divider>
                             </div>
                             
-                            <div class="px-2 text-subtitle-1 font-weight-light">
+                            <div class="px-lg-2 text-subtitle-1 font-weight-light">
                                 <div>
                                     All elements
                                 </div>
-                                <div class="pl-6 popOut changePointer" @click="filter('All')">
+                                <div class="pl-lg-6 popOut changePointer" @click="filter('All')">
                                     <v-icon size="small" icon="mdi-set-all"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-6 popOut changePointer" @click="filter(element.text)" v-for="element in elements" :key="element.text">
+                                <div class="pl-lg-6 popOut changePointer" @click="filter(element.text)" v-for="element in elements" :key="element.text">
                                     <v-icon size="small" :icon="element.icon"></v-icon>
                                     {{ element.text }}
                                 </div>
                             </div>
                             <v-divider thickness="1"></v-divider>
-                            <div class="px-2 pt-1 text-subtitle-1 font-weight-light">
+                            <div class="px-lg-2 pt-1 text-subtitle-1 font-weight-light">
                                 <div class="d-flex"> 
                                     <div>
                                         All folders
@@ -282,7 +283,7 @@
                                         <v-btn size="x-small" style="color: #2196f3;" icon="mdi-plus"/>
                                     </div>
                                 </div>
-                                <div class="pl-6 popOut changePointer" @click="filter(folder)" v-for="folder in folders" :key="folder">
+                                <div class="pl-lg-6 popOut changePointer" @click="filter(folder)" v-for="folder in folders" :key="folder">
                                     <v-icon size="small" icon="mdi-folder"></v-icon>
                                     {{ folder }}
                                 </div>
@@ -293,13 +294,13 @@
             </v-col>
 
             <!--2nd-->
-            <v-col cols="4" class="d-flex flex-column">
+            <v-col cols="8" md="4" class="d-flex flex-column">
                 <!--DASHBOARD ROW-->
                 <v-row>
-                    <v-col cols="6">
+                    <v-col cols="12" md="6">
                         <div class="text-h3 font-weight-light">Dashboard</div>
                     </v-col>
-                    <v-col class="d-flex justify-end" cols="6">
+                    <v-col class="d-flex justify-md-end" cols="12" md="6">
                         <div>
                             <VSheet class="ma-1 pa-1">
                                 <v-btn color="#2196f3" style="color: white;" prepend-icon="mdi-plus" @click="addDialog = !addDialog">
@@ -389,7 +390,7 @@
             </v-col>
 
             <!--3rd-->
-            <v-col cols="4">
+            <v-col cols="0" md="4">
             </v-col>
         </v-row>
     </v-container>
