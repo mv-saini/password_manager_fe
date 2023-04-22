@@ -69,7 +69,19 @@
   }
 </script>
 <template>
-    <v-form @submit.prevent="checkSubmit" class="mt-16">
+    <v-container class="mt-16">
+        <v-row>
+            <v-col cols="0" md="4"/>
+            <v-col cols="12" md="4" class="d-flex align-center justify-center">
+                 <div class="text-h4">
+                    Register
+                 </div>
+            </v-col>
+            <v-col cols="0" md="4"/>
+        </v-row>
+    </v-container>
+
+    <v-form @submit.prevent="checkSubmit">
         <v-container>
             <v-row>
                 <v-col md="4" class="d-none d-md-flex"/>
@@ -104,7 +116,7 @@
                 <v-col md="4" class="d-none d-md-flex"/>
                 <v-col cols="1" class="d-flex d-md-none"/>
                 <v-col cols="10" md="4">
-                    <v-text-field v-model="data.email" type="text" label="Email address" clearable></v-text-field>
+                    <v-text-field v-model="data.email" type="email" label="Email address" clearable></v-text-field>
                     <div
                     class="text-caption text-red"
                     v-for="error in v$.email.$errors"

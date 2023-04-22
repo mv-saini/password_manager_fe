@@ -30,7 +30,6 @@
     store.dispatch('access_token', null)
     store.dispatch('change_auth', false)
     store.dispatch('set_user', null)
-    store.dispatch('set_user_initials', null)
     store.dispatch('set_user_name', null)
     store.dispatch('set_user_surname', null)
     window.$cookies.remove('logged')
@@ -72,7 +71,7 @@
                 {{ computed(() => store.getters.getUser).value }}
               </p>
               <v-divider class="my-3"></v-divider>
-              <v-btn rounded variant="text">
+              <v-btn rounded variant="text" to="profile">
                 Edit Account
               </v-btn>
               <v-divider class="my-3"></v-divider>

@@ -16,7 +16,7 @@ function register() {
     <v-row>
       <v-col cols="0" md="2"/>
       <v-col cols="12" md="8">
-        <div class="text-h2 text-center font-weight-medium">Let pippo free your memory</div>
+        <div class="text-h2 text-center font-weight-medium">Let * free your memory</div>
       </v-col>
       <v-col cols="0" md="2"/>
     </v-row>
