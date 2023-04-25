@@ -5,75 +5,121 @@
     import { useVuelidate } from '@vuelidate/core'
     import { required, email, helpers } from '@vuelidate/validators'
 
+    /**Used to access vuex store */
     const store = useStore()
-    
+
+    /**An array that contains all the records of the user vault */
     const vault = ref([])
+
+    /**Contains the record selected by the user */
     const recordSelected = ref(null)
+
+    /**Contains the folder names of the selected record */
     const recordSelectedFolders = ref([])
 
+    /**Opens the dialog box to modify a record or to add a new record */
     const dialog = ref(false)
-    const addDialog = ref(false)
+
+    /**Determines if the user wants to modify or to add */
+    const dialogOption = ref(null)
+
+    /**Opens the dialog box to add a new folder or to change the name of a existing folder */
     const folderDialog = ref(false)
+
+    /**Determines if the user wants to add a new folder or to chnage the name */
+    const folderOption = ref(null)
+
+    /**Contains the old name of the folder */
+    const folderOldName = ref(null)
+
+    /**Contains the new name of a existing folder or a new folder */
     const folderName = ref(null)
+
+    /**If the last user request was successful or not */
     const lastOP = ref(false)
+
+    /**The color of the loading bar */
     const loadingColor = computed(() => store.getters.getLoadingColor)
 
+    /**Contains the filtered records from the vault */
     const filteredList = ref([])
+
+    /** */
+    const lastFilter = ref("")
+
+    /**An array that contains all the folders created by the user */
     const folders = ref([])
 
-    //for checkboxes records
+    /**If all the filtered records are selected or not */
     const allSelected = ref(false)
+
+    /**An array that contains the selected filtered records */
     const selectedItems = ref([])
 
-    const tags = ref([
-        {icon: 'mdi-star', text: 'Favorite'},
-        {icon: 'mdi-account', text: 'Accounts'},
-        {icon: 'mdi-credit-card', text: 'Credit Card'},
-        {icon: 'mdi-card-account-details', text: 'Identity'},
-        {icon: 'mdi-note', text: 'Notes'},
-    ])
+    /**An array of objects that contains the elements */
+    const tags = [
+        { icon: 'mdi-star', text: 'Favorite' },
+        { icon: 'mdi-account', text: 'Accounts' },
+        { icon: 'mdi-credit-card', text: 'Credit Card' },
+        { icon: 'mdi-card-account-details', text: 'Identity' },
+        { icon: 'mdi-note', text: 'Notes' },
+    ]
 
+    /**An array of objects that contains the options for each record */
     const options = [
         { title: 'Copy Email' },
         { title: 'Copy Password' },
-        { title: 'Delete' },
+        { title: 'Delete record' },
     ]
 
+    /**An object that contains the values of input inside a form */
     const data = reactive({
-        name: '',
+        name: '', 
         email: '',
         password: '',
         link: '',
         notes: '',
         tags: [],
-        folders: [],
     })
 
+    /**An array that contains the names of folders that will contain the record*/
+    const addRemoveToFromFolder = ref([])
+
+    /** */
+    const addRemoveToFromFolderDialog = ref(false)
+
+    /** */
+    const addRemoveToFromFolderOption = ref(false)
+
+    /**Rules that need to be met before submitting the form */
     const rules = computed(() => {
-        return{
-            name: { 
-                required: helpers.withMessage('Name is required', required), 
+        return {
+            name: {
+                required: helpers.withMessage('Name is required', required),
             },
-            email: { 
-                required: helpers.withMessage('Email is required', required), 
-                email : helpers.withMessage(' is not a valid email address', email)
+            email: {
+                required: helpers.withMessage('Email is required', required),
+                email: helpers.withMessage(' is not a valid email address', email)
             },
-            password: { 
-                required: helpers.withMessage('Password is required', required), 
+            password: {
+                required: helpers.withMessage('Password is required', required),
             }
         }
     })
-    
+
+    /**Validates the data by using rules */
     const v$ = useVuelidate(rules, data)
-    
+
+    /**Executes the functions when the page is loaded */
     onMounted(async () => {
-        if(computed(() => store.getters.getAuth).value){
+        if (computed(() => store.getters.getAuth).value) {
             await getVault()
             filterTags("All")
         }
     })
 
-    function selectAll(){
+    /**Selects all the records in the filtered list */
+    function selectAll() {
         selectedItems.value = []
         if (!allSelected.value) {
             filteredList.value.forEach(item => {
@@ -82,40 +128,67 @@
         }
     }
 
+    /**watches the selectedItems array for any change and when a change occurs executes the function */
     watch(selectedItems, () => {
-        if(selectedItems.value.length == filteredList.value.length && selectedItems.value.length > 0){
+        if (selectedItems.value.length == filteredList.value.length && selectedItems.value.length > 0) {
             allSelected.value = true
         }
     })
 
+    /**watches the lastOP  for any change and when a change occurs executes the function */
     watch(lastOP, () => {
         setTimeout(() => lastOP.value = false, 1200);
     })
 
-    function select(){
+    /**Function called when user selects a record */
+    function select() {
         allSelected.value = false
     }
 
-    function optionExe(index, val){
-        if(index == 0) navigator.clipboard.writeText(val.email)
-        else if(index == 1) navigator.clipboard.writeText(val.password) 
-        else if(index == 2){
-            deleteRecord([val._id])
+    /**Function that does a specific action when a certain option is selected */
+    function optionExe(index, val) {
+        switch(index){
+            case 0: 
+                navigator.clipboard.writeText(val.email)
+                break;
+            case 1:
+                navigator.clipboard.writeText(val.password)
+                break;
+            case 2:
+                deleteRecord([val._id])
+                break;
         }
+        
     }
 
-    function deleteSelected(){
-        if(selectedItems.value.length > 0) deleteRecord(selectedItems.value)
+    /**Deletes the selected records from user vault*/
+    async function deleteSelected() {
+        if (selectedItems.value.length > 0) await deleteRecord(selectedItems.value)
     }
-    
-    function showDetails(item){
+
+    /**Adds the selected records to a folder */
+    async function addRemoveSelectedToFromFolders(b) {
+        //create one for elements too
+        if (selectedItems.value.length <= 0) return
+        if(!b) addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
+        else selectedItems.value.map(x => addRemoveToFromFolder.value.map(folder => removeRecordsFromFolders(folder, x)))
+            
+        
+        selectedItems.value = []
+        allSelected.value = false
+        addRemoveToFromFolder.value = []
+        addRemoveToFromFolderDialog.value = false
+    }
+
+    /**Shows the details of a record selected from all the records */
+    function showDetails(item) {
         recordSelected.value = item;
         recordSelectedFolders.value = []
         folders.value.map(folder => {
             var i = 0
             var found = false
-            while(i < folder.v.length && !found){
-                if(folder.v[i] == recordSelected.value._id){
+            while (i < folder.v.length && !found) {
+                if (folder.v[i] == recordSelected.value._id) {
                     recordSelectedFolders.value.push(folder.k)
                     found = true
                 }
@@ -125,21 +198,24 @@
         dialog.value = true;
     }
 
-    function resetSubFunctionFilter(){
+    /**A sub-function that resets everything inside the function before filtering */
+    function resetSubFunctionFilter() {
         allSelected.value = false
         selectedItems.value = []
         filteredList.value = []
     }
 
-    function filterTags(filterTag){
+    /**Filters the records by elements and shows them to user */
+    function filterTags(filterTag) {
+        lastFilter.value = filterTag
         resetSubFunctionFilter()
-        if(filterTag == 'All'){
+        if (filterTag == 'All') {
             filteredList.value = vault.value
         }
-        else{
+        else {
             vault.value.map(element => {
                 element.tags.map(tag => {
-                    if(tag == filterTag){
+                    if (tag == filterTag) {
                         filteredList.value.push(element)
                     }
                 })
@@ -147,14 +223,16 @@
         }
     }
 
-    function filterFolders(filterFolder){
+    /**Filters the records by folders and shows them to user */
+    function filterFolders(filterFolder) {
+        lastFilter.value = filterFolder
         resetSubFunctionFilter()
         folders.value.map(folder => {
-            if(folder.k == filterFolder){
+            if (folder.k == filterFolder) {
                 var i = 0
-                while(i < folder.v.length){
+                while (i < folder.v.length) {
                     vault.value.map(e => {
-                        if(folder.v[i] == e._id){
+                        if (folder.v[i] == e._id) {
                             filteredList.value.push(e)
                         }
                     })
@@ -164,7 +242,8 @@
         })
     }
 
-    async function getVault(){
+    /**Calls the back-end to retrieve the user vault */
+    async function getVault() {
         vault.value = []
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'GET',
@@ -172,18 +251,19 @@
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
         })
-        if(response.status == 200){
+        if (response.status == 200) {
             const data = await response.json()
             vault.value = data.vault
-            setTags()
+            await getFolders()
+            filterTags("All")
             lastOP.value = true
         }
-        else{
-            lastOP.value = false
-        }
+        else lastOP.value = false
+        
     }
 
-    async function setTags(){
+    /**Calls the back-end to retrieve user created folders */
+    async function getFolders() {
         folders.value = []
         const response = await fetch(process.env.VUE_APP_FOLDER, {
             method: 'GET',
@@ -191,67 +271,97 @@
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
         })
-        if(response.status == 200){
+        if(response.status == 200) {
             const data = await response.json()
-            for(const [key, value] of Object.entries(data.folders[0])){
-                folders.value.push({
-                    k: key,
-                    v: value
-                })
+            for (const [key, value] of Object.entries(data.folders)) {
+                if(folders.value.find(x => x.k == key) == undefined){
+                    folders.value.push({
+                        k: key,
+                        v: value
+                    })
+                }
+                
             }
         }
     }
 
-    async function addFolder(){
+    /**Calls the back-end to add a newly created folder */
+    async function addFolder() {
         const response = await fetch(process.env.VUE_APP_FOLDER, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
-            body: JSON.stringify(folderName.value)
+            body: JSON.stringify({ "newfolder": folderName.value })
         })
-        if(response.status == 200){
+        if (response.status == 200) {
             await getVault()
             lastOP.value = true
+            folderName.value = ""
+            folderDialog.value = false
         }
     }
 
-    function changeName(folder){
-        folderName.value = folder
-        //folders.value.indexOf(folder)
+    /**Calls the back-end to change the name of a user created folder */
+    async function changeName() {
+        const response = await fetch(process.env.VUE_APP_FOLDER + "/change", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
+            },
+            body: JSON.stringify({ "oldName": folderOldName.value, "newName": folderName.value })
+        })
+        if (response.status == 200) {
+            await getVault()
+            lastOP.value = true
+            folderName.value = ""
+            folderDialog.value = false
+        }
     }
 
-    async function removeFolder(folder){
+    /**Calls the back-end to remove a user created folder */
+    async function removeFolder(folder) {
         const response = await fetch(process.env.VUE_APP_FOLDER + '/' + folder, {
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
         })
-        if(response.status == 200) await getVault()
+        if (response.status == 200) await getVault()
     }
 
-    async function update(){
+    /**Calls the back-end to update a record */
+    async function update() {
         await fetch(process.env.VUE_APP_VAULT + '/' + recordSelected.value._id, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
-            body: JSON.stringify(recordSelected)
+            body: JSON.stringify({
+                name: recordSelected.value.name,
+                email: recordSelected.value.email,
+                password: recordSelected.value.password,
+                notes: recordSelected.value.notes,
+                tags: recordSelected.value.tags,
+                link: recordSelected.value.link
+            })
         })
         await getVault()
         dialog.value = false
     }
 
-    async function checkAddRecord(){
+    /**Validates the form before sending it to back-end */
+    async function checkAddRecord() {
         const result = await v$.value.$validate()
-        if(result)
+        if (result)
             await addRecord()
     }
 
-    async function addRecord(){
+    /**Calls the back-end to add a new record */
+    async function addRecord() {
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'POST',
             headers: {
@@ -260,24 +370,44 @@
             },
             body: JSON.stringify(data)
         })
-        lastOP.value = response.status === 200
-        await getVault()
+        if(response.status == 201){
+            await getVault()
+            addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, [vault.value.filter(e => e.name == data.name)[0]._id]))
+            lastOP.value = true
+        }
         clearData()
-        addDialog.value = false
+        selectedItems.value = []
+        dialog.value = false
     }
 
-    function clearData(){
+    /**Calls the back-end to add a record/s to folder/s */
+    async function addRecordsToFolders(folder, record){
+        const response = await fetch(process.env.VUE_APP_FOLDER + '/element', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
+            },
+            body: JSON.stringify({"folder": folder, "element": record})
+        })
+        lastOP.value = response.status === 200
+        await getFolders()
+    } 
+
+    /**Clears the form data fields and reset the form validator */
+    function clearData() {
         data.email = ''
         data.name = ''
         data.link = ''
         data.notes = ''
         data.password = ''
         data.tag = []
-        data.type = []
+        addRemoveToFromFolder.value = []
         v$.value.$reset()
     }
 
-    async function deleteRecord(id){
+    /**Calls the back-end to delete a/multiple record/s */
+    async function deleteRecord(id) {
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'DELETE',
             headers: {
@@ -285,12 +415,29 @@
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
             credentials: 'include',
-            body: JSON.stringify({"tags" : id})
+            body: JSON.stringify({ "elements": id })
+        })
+        if(response.status == 200){
+            id.map(x => {
+                folders.value.map(folder => removeRecordsFromFolders(folder.k, x))
+            })
+        }
+        await getVault()
+        
+    }
+
+    /**Calls the back-end to remove a record from a folder */
+    async function removeRecordsFromFolders(folder, record){
+        const response = await fetch(process.env.VUE_APP_FOLDER + '/element/' + folder + '&' + record, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
+            }
         })
         lastOP.value = response.status === 200
-        await getVault()
+        await getFolders()
+        filterTags("All")
     }
-    //d-none d-lg-flex
 </script>
 
 <template>
@@ -302,13 +449,13 @@
             <v-col cols="4" md="4" xl="4" class="d-flex flex-column unselectable">
                 <v-row>
                     <v-col md="6" class="d-none d-xl-flex"></v-col>
-                    <v-col cols="12" md="6" >
+                    <v-col cols="12" md="6">
                         <div rounded class="pa-xl-6 mx-auto" max-width="400">
                             <div class="px-xl-2 text-h6 font-weight-bold">
                                 Filter
                                 <v-divider thickness="1"></v-divider>
                             </div>
-                            
+
                             <div class="px-xl-2 text-subtitle-1 font-weight-light">
                                 <div>
                                     All tags
@@ -317,23 +464,22 @@
                                     <v-icon size="small" icon="mdi-set-all"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" @click="filterTags(tag.text)" v-for="tag in tags" :key="tag.text">
+                                <div class="pl-xl-6 popOut changePointer" @click="filterTags(tag.text)" v-for="tag in tags"
+                                    :key="tag.text">
                                     <v-icon size="small" :icon="tag.icon"></v-icon>
                                     {{ tag.text }}
                                 </div>
                             </div>
                             <v-divider thickness="1"></v-divider>
                             <div class="px-xl-2 pt-1 text-subtitle-1 font-weight-light">
-                                <div class="d-flex"> 
+                                <div class="d-flex">
                                     <div>
                                         All folders
                                     </div>
-                                    <v-spacer/>
+                                    <v-spacer />
                                     <div class="align-center popOut">
-                                        <v-icon size="x-small" icon="mdi-pencil-outline" @click="selectMultipleFolder()"/>
-                                    </div>
-                                    <div class="align-center popOut">
-                                        <v-icon size="x-small" icon="mdi-plus" @click="folderDialog = true"/>
+                                        <v-icon size="x-small" icon="mdi-plus"
+                                            @click="folderOption = true, folderDialog = true" />
                                     </div>
                                 </div>
                                 <div class="pl-xl-6 d-flex" v-for="folder in folders" :key="folder.k">
@@ -342,11 +488,12 @@
                                         {{ folder.k }}
                                     </div>
                                     <v-spacer></v-spacer>
-                                    <div class="align-center popOut">
-                                        <v-icon size="x-small" icon="mdi-pencil-outline" @click="changeName(folder.k)"/>
+                                    <div class="align-center justify-end popOut">
+                                        <v-icon size="x-small" icon="mdi-pencil-outline"
+                                            @click="folderOption = false, folderDialog = true, folderOldName = folder.k" />
                                     </div>
-                                    <div class="align-center popOut">
-                                        <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)"/>
+                                    <div class="align-center justify-end popOut">
+                                        <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
                                     </div>
                                 </div>
                             </div>
@@ -360,12 +507,18 @@
                 <!--DASHBOARD ROW-->
                 <v-row>
                     <v-col cols="12" sm="6">
-                        <div class="text-h3 font-weight-light">Dashboard</div>
+                        <div class="text-h3 font-weight-light">Dashboard 
+                            <div class="text-h6 font-weight-light d-flex align-center">
+                                <v-icon size="small" icon="mdi-folder"></v-icon> 
+                                <div class="pl-2">{{ lastFilter }}</div>
+                            </div>
+                        </div>
                     </v-col>
                     <v-col class="d-flex justify-sm-end" cols="12" sm="6">
                         <div>
                             <VSheet class="ma-1 pa-1">
-                                <v-btn color="#2196f3" style="color: white;" prepend-icon="mdi-plus" @click="addDialog = !addDialog">
+                                <v-btn color="#2196f3" style="color: white;" prepend-icon="mdi-plus"
+                                    @click="dialog = true, dialogOption = true">
                                     Add new
                                 </v-btn>
                             </VSheet>
@@ -388,10 +541,16 @@
                         <v-menu>
                             <template v-slot:activator="{ props }">
                                 <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
-                            </template> 
+                            </template>
                             <v-list>
                                 <v-list-item @click="deleteSelected()">
-                                    <v-list-item-title>Delete Selected ({{ selectedItems.length }})</v-list-item-title>
+                                    <v-list-item-title>Delete selected records ({{ selectedItems.length }})</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false">
+                                    <v-list-item-title>Add selected records to a folder ({{ selectedItems.length }})</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true">
+                                    <v-list-item-title>Remove selected records from a folder ({{ selectedItems.length }})</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -407,7 +566,7 @@
                             <v-col cols="8">
                                 <div class="text-start align-center justify-center d-flex flex-row">
                                     <div class="pa-3 text-h6 ">
-                                         No records found
+                                        No records found
                                     </div>
                                 </div>
                             </v-col>
@@ -422,13 +581,15 @@
                     <v-col>
                         <v-row class="d-flex justify-center align-center">
                             <v-col cols="2">
-                                <v-checkbox class="mt-5" v-model="selectedItems" @click="select()" :value="item._id"></v-checkbox>
+                                <v-checkbox class="mt-5" v-model="selectedItems" @click="select()"
+                                    :value="item._id"></v-checkbox>
                             </v-col>
                             <v-col cols="8">
-                                <div @click="showDetails(item)" class="popOut text-start align-center d-flex flex-row unselectable changePointer">
+                                <div @click="dialogOption = false, showDetails(item)"
+                                    class="popOut text-start align-center d-flex flex-row unselectable changePointer">
                                     <v-icon size="small" icon="mdi-account"></v-icon>
                                     <div class="pa-3 text-h6 ">
-                                        {{ item.name }} 
+                                        {{ item.name }}
                                         <div class="text-caption">
                                             {{ item.email }}
                                         </div>
@@ -439,9 +600,10 @@
                                 <v-menu>
                                     <template v-slot:activator="{ props }">
                                         <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
-                                    </template> 
+                                    </template>
                                     <v-list>
-                                        <v-list-item v-for="(option, index) in options" :key="index" :value="index" @click="optionExe(index, item)">
+                                        <v-list-item v-for="(option, index) in options" :key="index" :value="index"
+                                            @click="optionExe(index, item)">
                                             <v-list-item-title>{{ option.title }}</v-list-item-title>
                                         </v-list-item>
                                     </v-list>
@@ -460,7 +622,8 @@
     </v-container>
 
     <v-dialog persistent v-model="dialog" width="1024">
-        <v-card>
+        <!--Modify record-->
+        <v-card v-if="!dialogOption">
             <v-card-title class="d-flex align-self-center">
                 <div class="mt-1 pt-1 text-h5">
                     Details
@@ -470,22 +633,20 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12" sm="6">
-                            <v-text-field label="Name" v-model="recordSelected.name"/>
-                        </v-col>
-                        <v-col cols="12" sm="6" md="3">
-                            <v-select v-model="recordSelectedFolders" :items="folders" item-title="k" item-value="k" label="Folders" chips multiple/>
-                        </v-col>
-                        <v-col cols="12" sm="6" md="3">
-                            <v-select v-model="recordSelected.tags" :items="tags" item-title="text" item-value="text" label="Tags" chips multiple/>
+                            <v-text-field label="Name" v-model="recordSelected.name" />
                         </v-col>
                         <v-col cols="12" sm="6">
-                            <v-text-field label="Email" v-model="recordSelected.email"/>
+                            <v-select v-model="recordSelected.tags" :items="tags" item-title="text" item-value="text"
+                                label="Tags" chips multiple />
                         </v-col>
                         <v-col cols="12" sm="6">
-                            <v-text-field label="Password" v-model="recordSelected.password"/>
+                            <v-text-field label="Email" v-model="recordSelected.email" />
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Password" v-model="recordSelected.password" />
                         </v-col>
                         <v-col cols="12">
-                            <v-text-field label="Link" v-model="recordSelected.link"/>
+                            <v-text-field label="Link" v-model="recordSelected.link" />
                         </v-col>
                         <v-col cols="12">
                             <v-textarea label="Notes" v-model="recordSelected.notes"></v-textarea>
@@ -503,10 +664,8 @@
                 </v-btn>
             </v-card-actions>
         </v-card>
-    </v-dialog>
-    
-    <v-dialog persistent v-model="addDialog" width="1024">
-        <v-card>
+        <!--Add a record-->
+        <v-card v-else>
             <v-card-title class="d-flex align-self-center">
                 <div class="mt-1 pt-1 text-h5">
                     Add a record
@@ -515,42 +674,44 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                    <v-col cols="12" sm="6">
-                        <v-text-field clearable label="Name" v-model="data.name"/>
-                        <div class="text-caption text-red" v-for="error in v$.name.$errors" :key="error.$uid">
-                            {{ data.name + error.$message }}
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="3">
-                        <v-select v-model="data.folders" :items="folders" item-title="k" item-value="k" label="Folders" chips multiple/>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="3">
-                        <v-select v-model="data.tags" :items="tags" item-title="text" item-value="text" label="Tags" chips multiple/>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-text-field label="Email" v-model="data.email"/>
-                        <div class="text-caption text-red" v-for="error in v$.email.$errors" :key="error.$uid">
-                            {{ data.email + error.$message }}
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <v-text-field label="Password" v-model="data.password"/>
-                        <div class="text-caption text-red" v-for="error in v$.password.$errors" :key="error.$uid">
-                            {{ data.password + error.$message }}
-                        </div>
-                    </v-col>
-                    <v-col cols="12">
-                        <v-text-field label="Link" v-model="data.link"/>
-                    </v-col>
-                    <v-col cols="12">
-                        <v-textarea label="Notes" v-model="data.notes"></v-textarea>
-                    </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field clearable label="Name" v-model="data.name" />
+                            <div class="text-caption text-red" v-for="error in v$.name.$errors" :key="error.$uid">
+                                {{ data.name + error.$message }}
+                            </div>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="3">
+                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k" label="Folders"
+                                chips multiple />
+                        </v-col>
+                        <v-col cols="12" sm="6" md="3">
+                            <v-select v-model="data.tags" :items="tags" item-title="text" item-value="text" label="Tags"
+                                chips multiple />
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Email" v-model="data.email" />
+                            <div class="text-caption text-red" v-for="error in v$.email.$errors" :key="error.$uid">
+                                {{ data.email + error.$message }}
+                            </div>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field label="Password" v-model="data.password" />
+                            <div class="text-caption text-red" v-for="error in v$.password.$errors" :key="error.$uid">
+                                {{ data.password + error.$message }}
+                            </div>
+                        </v-col>
+                        <v-col cols="12">
+                            <v-text-field label="Link" v-model="data.link" />
+                        </v-col>
+                        <v-col cols="12">
+                            <v-textarea label="Notes" v-model="data.notes"></v-textarea>
+                        </v-col>
                     </v-row>
                 </v-container>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue-darken-1" variant="text" @click="addDialog = false">
+                <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
                     Close
                 </v-btn>
                 <v-btn color="blue-darken-1" variant="text" @click="checkAddRecord()">
@@ -563,8 +724,11 @@
     <v-dialog v-model="folderDialog" width="500">
         <v-card>
             <v-card-title class="d-flex align-self-center">
-                <div class="mt-1 pt-1 text-h5">
+                <div v-if="folderOption" class="mt-1 pt-1 text-h5">
                     Add a new folder
+                </div>
+                <div v-else class="mt-1 pt-1 text-h5">
+                    New name
                 </div>
             </v-card-title>
             <v-card-text>
@@ -578,8 +742,46 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue-darken-1" variant="text" @click="addFolder()">
+                <v-btn v-if="folderOption" color="blue-darken-1" variant="text" @click="addFolder()">
                     Add
+                </v-btn>
+                <v-btn v-else color="blue-darken-1" variant="text" @click="changeName()">
+                    Change
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="addRemoveToFromFolderDialog" width="500">
+        <v-card>
+            <v-card-title class="d-flex align-self-center">
+                <div v-if="!addRemoveToFromFolderOption" class="mt-1 pt-1 text-h5">
+                    Select folders to add to
+                </div>
+                <div v-else class="mt-1 pt-1 text-h5">
+                    Select folders to remove from
+                </div>
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-row>
+                        <v-col>
+                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k" label="Folders"
+                                chips multiple />
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue-darken-1" variant="text" @click="addRemoveToFromFolderDialog = false, selectedItems = [], addRemoveToFromFolder = []">
+                    Close
+                </v-btn>
+                <v-btn v-if="!addRemoveToFromFolderOption" color="blue-darken-1" variant="text" @click="addRemoveSelectedToFromFolders(false)">
+                    Add
+                </v-btn>
+                <v-btn v-else color="blue-darken-1" variant="text" @click="addRemoveSelectedToFromFolders(true)">
+                    Remove 
                 </v-btn>
             </v-card-actions>
         </v-card>
@@ -587,24 +789,25 @@
 </template>
 
 <style scoped> 
-    .changePointer{
-        cursor: pointer;
-    }
-    .unselectable {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
+.changePointer {
+     cursor: pointer;
+ }
 
-    .popOut{
-        transition: 0.15s;
-    }
+ .unselectable {
+     -webkit-touch-callout: none;
+     -webkit-user-select: none;
+     -khtml-user-select: none;
+     -moz-user-select: none;
+     -ms-user-select: none;
+     user-select: none;
+ }
 
-    .popOut:hover{
-        color: #2196f3;
-        transform: scale(1.02);
-    }
+ .popOut {
+     transition: 0.15s;
+ }
+
+ .popOut:hover {
+     color: #2196f3;
+     transform: scale(1.02);
+ }
 </style>
