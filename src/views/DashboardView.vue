@@ -3,7 +3,7 @@
     import { onMounted, ref, watch, reactive } from 'vue';
     import { useStore } from 'vuex';
     import { useVuelidate } from '@vuelidate/core'
-    import { required, email, helpers } from '@vuelidate/validators'
+    import { required, helpers } from '@vuelidate/validators'
 
     /**Used to access vuex store */
     const store = useStore()
@@ -13,9 +13,6 @@
 
     /**Contains the record selected by the user */
     const recordSelected = ref(null)
-
-    /**Contains the folder names of the selected record */
-    const recordSelectedFolders = ref([])
 
     /**Opens the dialog box to modify a record or to add a new record */
     const dialog = ref(false)
@@ -58,7 +55,6 @@
 
     /**An array of objects that contains the elements */
     const tags = [
-        { icon: 'mdi-star', text: 'Favorite' },
         { icon: 'mdi-account', text: 'Accounts' },
         { icon: 'mdi-credit-card', text: 'Credit Card' },
         { icon: 'mdi-card-account-details', text: 'Identity' },
@@ -79,7 +75,14 @@
         password: '',
         link: '',
         notes: '',
-        tags: [],
+        tags: ['Accounts'],
+        favorite: false,
+        card_holder: '',
+        expiry: null,
+        cvv: '',
+        card_number: null,
+        id_number: null,
+        id_holder: ''
     })
 
     /**An array that contains the names of folders that will contain the record*/
@@ -97,13 +100,6 @@
             name: {
                 required: helpers.withMessage('Name is required', required),
             },
-            email: {
-                required: helpers.withMessage('Email is required', required),
-                email: helpers.withMessage(' is not a valid email address', email)
-            },
-            password: {
-                required: helpers.withMessage('Password is required', required),
-            }
         }
     })
 
@@ -112,10 +108,7 @@
 
     /**Executes the functions when the page is loaded */
     onMounted(async () => {
-        if (computed(() => store.getters.getAuth).value) {
-            await getVault()
-            filterTags("All")
-        }
+        if (computed(() => store.getters.getAuth).value) await getVault()  
     })
 
     /**Selects all the records in the filtered list */
@@ -183,18 +176,6 @@
     /**Shows the details of a record selected from all the records */
     function showDetails(item) {
         recordSelected.value = item;
-        recordSelectedFolders.value = []
-        folders.value.map(folder => {
-            var i = 0
-            var found = false
-            while (i < folder.v.length && !found) {
-                if (folder.v[i] == recordSelected.value._id) {
-                    recordSelectedFolders.value.push(folder.k)
-                    found = true
-                }
-                i++
-            }
-        })
         dialog.value = true;
     }
 
@@ -212,13 +193,16 @@
         if (filterTag == 'All') {
             filteredList.value = vault.value
         }
+        if (filterTag == 'Favorite') {
+            vault.value.map(element => {
+                if(element.favorite) filteredList.value.push(element)
+            })
+        }
         else {
             vault.value.map(element => {
-                element.tags.map(tag => {
-                    if (tag == filterTag) {
-                        filteredList.value.push(element)
-                    }
-                })
+                if (element.tags == filterTag) {
+                    filteredList.value.push(element)
+                }
             })
         }
     }
@@ -334,20 +318,16 @@
 
     /**Calls the back-end to update a record */
     async function update() {
-        await fetch(process.env.VUE_APP_VAULT + '/' + recordSelected.value._id, {
+        let _id = recordSelected.value._id
+        delete recordSelected.value._id
+        delete recordSelected.value.user_id
+        await fetch(process.env.VUE_APP_VAULT + '/' + _id, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
-            body: JSON.stringify({
-                name: recordSelected.value.name,
-                email: recordSelected.value.email,
-                password: recordSelected.value.password,
-                notes: recordSelected.value.notes,
-                tags: recordSelected.value.tags,
-                link: recordSelected.value.link
-            })
+            body: JSON.stringify(recordSelected.value)
         })
         await getVault()
         dialog.value = false
@@ -355,9 +335,7 @@
 
     /**Validates the form before sending it to back-end */
     async function checkAddRecord() {
-        const result = await v$.value.$validate()
-        if (result)
-            await addRecord()
+        if (await v$.value.$validate()) await addRecord()
     }
 
     /**Calls the back-end to add a new record */
@@ -401,7 +379,14 @@
         data.link = ''
         data.notes = ''
         data.password = ''
-        data.tag = []
+        data.tags = []
+        data.favorite = false
+        data.card_holder = ''
+        data.expiry = null
+        data.cvv = ''
+        data.card_number = null
+        data.id_number = null
+        data.id_holder = ''
         addRemoveToFromFolder.value = []
         v$.value.$reset()
     }
@@ -438,15 +423,21 @@
         await getFolders()
         filterTags("All")
     }
+
+    function addRemoveToFromFav(item){
+        item.favorite = !item.favorite
+        recordSelected.value = item;
+        update()
+    }
 </script>
 
 <template>
     <v-progress-linear v-if="lastOP" :color="loadingColor" indeterminate></v-progress-linear>
     <v-progress-linear v-else color="white"></v-progress-linear>
-    <v-container class="mt-16">
+    <v-container class="mt-16 unselectable">
         <v-row>
             <!--1st-->
-            <v-col cols="4" md="4" xl="4" class="d-flex flex-column unselectable">
+            <v-col cols="4" md="4" xl="4" class="d-flex flex-column">
                 <v-row>
                     <v-col md="6" class="d-none d-xl-flex"></v-col>
                     <v-col cols="12" md="6">
@@ -460,14 +451,31 @@
                                 <div>
                                     All tags
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" @click="filterTags('All')">
+                                <div class="pl-xl-6 popOut changePointer" v-if="lastFilter == 'All'" style="color: #2196f3;" @click="filterTags('All')">
                                     <v-icon size="small" icon="mdi-set-all"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" @click="filterTags(tag.text)" v-for="tag in tags"
-                                    :key="tag.text">
-                                    <v-icon size="small" :icon="tag.icon"></v-icon>
-                                    {{ tag.text }}
+                                <div class="pl-xl-6 popOut changePointer" v-else @click="filterTags('All')">
+                                    <v-icon size="small" icon="mdi-set-all"></v-icon>
+                                    All
+                                </div>
+                                <div class="pl-xl-6 popOut changePointer" v-if="lastFilter == 'Favorite'" style="color: #2196f3;" @click="filterTags('Favorite')">
+                                    <v-icon size="small" icon="mdi-star"></v-icon>
+                                    Favorite
+                                </div>
+                                <div class="pl-xl-6 popOut changePointer" v-else @click="filterTags('Favorite')">
+                                    <v-icon size="small" icon="mdi-star"></v-icon>
+                                    Favorite
+                                </div>
+                                <div class="pl-xl-6 popOut changePointer" @click="filterTags(tag.text)" v-for="tag in tags" :key="tag.text">
+                                    <div v-if="lastFilter == tag.text" style="color: #2196f3">
+                                        <v-icon size="small" :icon="tag.icon"></v-icon>
+                                        {{ tag.text }}
+                                    </div>
+                                    <div v-else>
+                                        <v-icon size="small" :icon="tag.icon"></v-icon>
+                                        {{ tag.text }}
+                                    </div>
                                 </div>
                             </div>
                             <v-divider thickness="1"></v-divider>
@@ -478,22 +486,37 @@
                                     </div>
                                     <v-spacer />
                                     <div class="align-center popOut">
-                                        <v-icon size="x-small" icon="mdi-plus"
-                                            @click="folderOption = true, folderDialog = true" />
+                                        <v-icon size="x-small" icon="mdi-plus" @click="folderOption = true, folderDialog = true" />
                                     </div>
                                 </div>
-                                <div class="pl-xl-6 d-flex" v-for="folder in folders" :key="folder.k">
-                                    <div class="popOut changePointer" @click="filterFolders(folder.k)">
-                                        <v-icon size="small" icon="mdi-folder"></v-icon>
-                                        {{ folder.k }}
+                                <div v-for="folder in folders" :key="folder.k">
+                                    <div class="pl-xl-6 d-flex" v-if="lastFilter == folder.k" style="color: #2196f3">
+                                        <div class="popOut changePointer" @click="filterFolders(folder.k)">
+                                            <v-icon size="small" icon="mdi-folder"></v-icon>
+                                            {{ folder.k }}
+                                        </div>
+                                        <v-spacer></v-spacer>
+                                        <div class="align-center justify-end popOut">
+                                            <v-icon size="x-small" icon="mdi-pencil-outline"
+                                                @click="folderOption = false, folderDialog = true, folderOldName = folder.k" />
+                                        </div>
+                                        <div class="align-center justify-end popOut">
+                                            <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
+                                        </div>
                                     </div>
-                                    <v-spacer></v-spacer>
-                                    <div class="align-center justify-end popOut">
-                                        <v-icon size="x-small" icon="mdi-pencil-outline"
-                                            @click="folderOption = false, folderDialog = true, folderOldName = folder.k" />
-                                    </div>
-                                    <div class="align-center justify-end popOut">
-                                        <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
+                                    <div class="pl-xl-6 d-flex" v-else>
+                                        <div class="popOut changePointer" @click="filterFolders(folder.k)">
+                                            <v-icon size="small" icon="mdi-folder"></v-icon>
+                                            {{ folder.k }}
+                                        </div>
+                                        <v-spacer></v-spacer>
+                                        <div class="align-center justify-end popOut">
+                                            <v-icon size="x-small" icon="mdi-pencil-outline"
+                                                @click="folderOption = false, folderDialog = true, folderOldName = folder.k" />
+                                        </div>
+                                        <div class="align-center justify-end popOut">
+                                            <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -584,17 +607,22 @@
                                 <v-checkbox class="mt-5" v-model="selectedItems" @click="select()"
                                     :value="item._id"></v-checkbox>
                             </v-col>
-                            <v-col cols="8">
-                                <div @click="dialogOption = false, showDetails(item)"
-                                    class="popOut text-start align-center d-flex flex-row unselectable changePointer">
-                                    <v-icon size="small" icon="mdi-account"></v-icon>
-                                    <div class="pa-3 text-h6 ">
+                            <v-col cols="7">
+                                <div @click="dialogOption = false, showDetails(item)" class="popOut text-start align-center d-flex flex-row changePointer">
+                                    <div v-for="tag in tags" :key="tag.text">
+                                        <v-icon v-if="item.tags == tag.text" size="small" :icon="tag.icon"></v-icon>
+                                    </div>
+                                    <div class="pa-3 text-h6">
                                         {{ item.name }}
                                         <div class="text-caption">
                                             {{ item.email }}
                                         </div>
                                     </div>
                                 </div>
+                            </v-col>
+                            <v-col cols="1">
+                                <v-icon class="popOut" size="small" icon="mdi-star" v-if="item.favorite" color="#2196f3" @click="addRemoveToFromFav(item, true)"></v-icon>
+                                <v-icon class="popOut" size="small" icon="mdi-star" v-else @click="addRemoveToFromFav(item, false)"></v-icon>
                             </v-col>
                             <v-col cols="2">
                                 <v-menu>
@@ -637,19 +665,37 @@
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-select v-model="recordSelected.tags" :items="tags" item-title="text" item-value="text"
-                                label="Tags" chips multiple />
+                                label="Tags" chips/>
                         </v-col>
-                        <v-col cols="12" sm="6">
+                        <v-col v-if="recordSelected.tags == 'Accounts'" cols="12" sm="6">
                             <v-text-field label="Email" v-model="recordSelected.email" />
                         </v-col>
-                        <v-col cols="12" sm="6">
+                        <v-col v-if="recordSelected.tags == 'Accounts'" cols="12" sm="6">
                             <v-text-field label="Password" v-model="recordSelected.password" />
                         </v-col>
-                        <v-col cols="12">
+                        <v-col v-if="recordSelected.tags == 'Accounts'" cols="12">
                             <v-text-field label="Link" v-model="recordSelected.link" />
                         </v-col>
+                        <v-col v-if="recordSelected.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Card Holder Name" v-model="recordSelected.card_holder" />
+                        </v-col>
+                        <v-col v-if="recordSelected.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Card Number" v-model="recordSelected.card_number" />
+                        </v-col>
+                        <v-col v-if="recordSelected.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Expiry" v-model="recordSelected.expiry" />
+                        </v-col>
+                        <v-col v-if="recordSelected.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="CVV" v-model="recordSelected.cvv" />
+                        </v-col>
+                        <v-col v-if="recordSelected.tags == 'Identity'" cols="12" sm="6">
+                            <v-text-field label="ID Holder Name" v-model="recordSelected.id_holder" />
+                        </v-col>
+                        <v-col v-if="recordSelected.tags == 'Identity'" cols="12" sm="6">
+                            <v-text-field label="ID Number" v-model="recordSelected.id_number" />
+                        </v-col>
                         <v-col cols="12">
-                            <v-textarea label="Notes" v-model="recordSelected.notes"></v-textarea>
+                            <v-textarea label="Notes/Details" v-model="recordSelected.notes"></v-textarea>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -686,25 +732,37 @@
                         </v-col>
                         <v-col cols="12" sm="6" md="3">
                             <v-select v-model="data.tags" :items="tags" item-title="text" item-value="text" label="Tags"
-                                chips multiple />
+                                chips/>
                         </v-col>
-                        <v-col cols="12" sm="6">
+                        <v-col v-if="data.tags == 'Accounts'" cols="12" sm="6">
                             <v-text-field label="Email" v-model="data.email" />
-                            <div class="text-caption text-red" v-for="error in v$.email.$errors" :key="error.$uid">
-                                {{ data.email + error.$message }}
-                            </div>
                         </v-col>
-                        <v-col cols="12" sm="6">
+                        <v-col v-if="data.tags == 'Accounts'" cols="12" sm="6">
                             <v-text-field label="Password" v-model="data.password" />
-                            <div class="text-caption text-red" v-for="error in v$.password.$errors" :key="error.$uid">
-                                {{ data.password + error.$message }}
-                            </div>
                         </v-col>
-                        <v-col cols="12">
+                        <v-col v-if="data.tags == 'Accounts'" cols="12">
                             <v-text-field label="Link" v-model="data.link" />
                         </v-col>
+                        <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Card Holder Name" v-model="data.card_holder" />
+                        </v-col>
+                        <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Card Number" v-model="data.card_number" />
+                        </v-col>
+                        <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="Expiry" v-model="data.expiry" />
+                        </v-col>
+                        <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
+                            <v-text-field label="CVV" v-model="data.cvv" />
+                        </v-col>
+                        <v-col v-if="data.tags == 'Identity'" cols="12" sm="6">
+                            <v-text-field label="ID Holder Name" v-model="data.id_holder" />
+                        </v-col>
+                        <v-col v-if="data.tags == 'Identity'" cols="12" sm="6">
+                            <v-text-field label="ID Number" v-model="data.id_number" />
+                        </v-col>
                         <v-col cols="12">
-                            <v-textarea label="Notes" v-model="data.notes"></v-textarea>
+                            <v-textarea label="Notes/Details" v-model="data.notes"></v-textarea>
                         </v-col>
                     </v-row>
                 </v-container>
