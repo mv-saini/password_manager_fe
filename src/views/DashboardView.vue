@@ -437,7 +437,7 @@
     <v-container class="mt-16 unselectable">
         <v-row>
             <!--1st-->
-            <v-col cols="4" md="4" xl="4" class="d-flex flex-column">
+            <v-col cols="4" xl="4" class="d-flex flex-column">
                 <v-row>
                     <v-col md="6" class="d-none d-xl-flex"></v-col>
                     <v-col cols="12" md="6">
@@ -489,9 +489,12 @@
                                         <v-icon size="x-small" icon="mdi-plus" @click="folderOption = true, folderDialog = true" />
                                     </div>
                                 </div>
-                                <div v-for="folder in folders" :key="folder.k">
-                                    <div class="pl-xl-6 d-flex" v-if="lastFilter == folder.k" style="color: #2196f3">
-                                        <div class="popOut changePointer" @click="filterFolders(folder.k)">
+                                <div class="pl-xl-6 d-flex" v-for="folder in folders" :key="folder.k">
+                                        <div class="popOut changePointer" v-if="lastFilter == folder.k" style="color: #2196f3" @click="filterFolders(folder.k)">
+                                            <v-icon size="small" icon="mdi-folder"></v-icon>
+                                            {{ folder.k }}
+                                        </div>
+                                        <div class="popOut changePointer" v-else @click="filterFolders(folder.k)">
                                             <v-icon size="small" icon="mdi-folder"></v-icon>
                                             {{ folder.k }}
                                         </div>
@@ -503,21 +506,6 @@
                                         <div class="align-center justify-end popOut">
                                             <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
                                         </div>
-                                    </div>
-                                    <div class="pl-xl-6 d-flex" v-else>
-                                        <div class="popOut changePointer" @click="filterFolders(folder.k)">
-                                            <v-icon size="small" icon="mdi-folder"></v-icon>
-                                            {{ folder.k }}
-                                        </div>
-                                        <v-spacer></v-spacer>
-                                        <div class="align-center justify-end popOut">
-                                            <v-icon size="x-small" icon="mdi-pencil-outline"
-                                                @click="folderOption = false, folderDialog = true, folderOldName = folder.k" />
-                                        </div>
-                                        <div class="align-center justify-end popOut">
-                                            <v-icon size="x-small" icon="mdi-minus" @click="removeFolder(folder.k)" />
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -526,7 +514,7 @@
             </v-col>
 
             <!--2nd-->
-            <v-col cols="8" md="8" xl="4" class="d-flex flex-column">
+            <v-col cols="8" xl="4" class="d-flex flex-column">
                 <!--DASHBOARD ROW-->
                 <v-row>
                     <v-col cols="12" sm="6">
@@ -644,7 +632,7 @@
             </v-col>
 
             <!--3rd-->
-            <v-col cols="0" md="0" xl="4">
+            <v-col cols="0" xl="4">
             </v-col>
         </v-row>
     </v-container>

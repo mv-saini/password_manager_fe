@@ -116,7 +116,7 @@
                 <v-col md="4" class="d-none d-md-flex"/>
                 <v-col cols="1" class="d-flex d-md-none"/>
                 <v-col cols="10" md="4">
-                    <v-text-field v-model="data.email" type="email" label="Email address" clearable></v-text-field>
+                    <v-text-field v-model="data.email" type="text" label="Email address" clearable></v-text-field>
                     <div
                     class="text-caption text-red"
                     v-for="error in v$.email.$errors"
