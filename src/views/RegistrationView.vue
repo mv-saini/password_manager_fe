@@ -2,10 +2,13 @@
   import router from '@/router';
   import { useVuelidate } from '@vuelidate/core'
   import { required, minLength, maxLength, email, sameAs, helpers } from '@vuelidate/validators'
-  import { reactive, computed } from 'vue';
+  import { reactive, computed, ref } from 'vue';
 
-  const uiLengthMax = 20
+  const uiLengthMax = 30
   const uiLengthMin = 8
+
+  const showHidePass = ref(false)
+  const showHideConfimPass = ref(false)
 
   const data = reactive({
     name: '',
@@ -133,7 +136,8 @@
                 <v-col md="4" class="d-none d-md-flex"/>
                 <v-col cols="1" class="d-flex d-md-none"/>
                  <v-col cols="10" md="4">
-                    <v-text-field v-model="data.password" type="password" label="Password" clearable></v-text-field>
+                    <v-text-field v-model="data.password" :type="showHidePass ? 'text' : 'password'" label="Password" clearable
+                    :append-inner-icon="showHidePass ? 'mdi-eye' : 'mdi-eye-off'" @click:append-inner="showHidePass = !showHidePass"></v-text-field>
                     <div
                     class="text-caption text-red"
                     v-for="error in v$.password.$errors"
@@ -161,7 +165,8 @@
                 <v-col md="4" class="d-none d-md-flex"/>
                 <v-col cols="1" class="d-flex d-md-none"/>
                 <v-col cols="10" md="4">
-                    <v-text-field v-model="data.confirmation" type="password" label="Confirm Password" clearable></v-text-field>
+                    <v-text-field v-model="data.confirmation" :type="showHideConfimPass ? 'text' : 'password'" label="Confirm Password" clearable
+                    :append-inner-icon="showHideConfimPass ? 'mdi-eye' : 'mdi-eye-off'" @click:append-inner="showHideConfimPass = !showHideConfimPass"></v-text-field>
                     <div
                     class="text-caption text-red"
                     v-for="error in v$.confirmation.$errors"
