@@ -4,6 +4,7 @@
     import { useStore } from 'vuex';
     import { useVuelidate } from '@vuelidate/core'
     import { required, helpers } from '@vuelidate/validators'
+import router from '@/router';
 
     /**Used to access vuex store */
     const store = useStore()
@@ -235,6 +236,7 @@
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
         })
+        console.log(response.status)
         if (response.status == 200) {
             const data = await response.json()
             vault.value = data.vault
@@ -242,8 +244,36 @@
             filterTags("All")
             lastOP.value = true
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await getVault()
+        }
         else lastOP.value = false
         
+    }
+
+    function tokenNotValid(){
+        store.dispatch('access_token', null)
+        store.dispatch('change_auth', false)
+        store.dispatch('set_user', null)
+        store.dispatch('set_user_name', null)
+        store.dispatch('set_user_surname', null)
+        router.push({
+            name: 'login'
+        })
+    }
+
+    async function refreshToken(){
+        const response = await fetch(process.env.VUE_APP_TOKEN, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({"token": computed(() => store.getters.getRefreshToken).value})
+        })
+        const data = await response.json()
+        store.dispatch('access_token', data.accessToken)
     }
 
     /**Calls the back-end to retrieve user created folders */
@@ -285,6 +315,11 @@
             folderName.value = ""
             folderDialog.value = false
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await addFolder()
+        }
     }
 
     /**Calls the back-end to change the name of a user created folder */
@@ -303,6 +338,11 @@
             folderName.value = ""
             folderDialog.value = false
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await changeName()
+        }
     }
 
     /**Calls the back-end to remove a user created folder */
@@ -314,6 +354,11 @@
             },
         })
         if (response.status == 200) await getVault()
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await removeFolder(folder)
+        }
     }
 
     /**Calls the back-end to update a record */
@@ -321,7 +366,7 @@
         let _id = recordSelected.value._id
         delete recordSelected.value._id
         delete recordSelected.value.user_id
-        await fetch(process.env.VUE_APP_VAULT + '/' + _id, {
+        const response = await fetch(process.env.VUE_APP_VAULT + '/' + _id, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -329,8 +374,15 @@
             },
             body: JSON.stringify(recordSelected.value)
         })
-        await getVault()
-        dialog.value = false
+        if(response.status == 200){
+            await getVault()
+            dialog.value = false
+        }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await update()
+        }
     }
 
     /**Validates the form before sending it to back-end */
@@ -353,9 +405,13 @@
             addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, [vault.value.filter(e => e.name == data.name)[0]._id]))
             lastOP.value = true
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await addRecord()
+        }
         clearData()
         selectedItems.value = []
-        dialog.value = false
     }
 
     /**Calls the back-end to add a record/s to folder/s */
@@ -368,7 +424,14 @@
             },
             body: JSON.stringify({"folder": folder, "element": record})
         })
-        lastOP.value = response.status === 200
+        if(response.status == 200){
+            lastOP.value = true
+        }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await addRecordsToFolders(folder, record)
+        }
         await getFolders()
     } 
 
@@ -407,8 +470,12 @@
                 folders.value.map(folder => removeRecordsFromFolders(folder.k, x))
             })
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await deleteRecord(id)
+        }
         await getVault()
-        
     }
 
     /**Calls the back-end to remove a record from a folder */
@@ -419,7 +486,14 @@
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             }
         })
-        lastOP.value = response.status === 200
+        if(response.status == 200){
+            lastOP.value = true
+        }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await removeRecordsFromFolders(folder, record)
+        }
         await getFolders()
         filterTags("All")
     }

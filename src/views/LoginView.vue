@@ -34,11 +34,11 @@
     if(response.status == 200){
         const resData = await response.json()
         store.dispatch('access_token', resData.accessToken)
+        store.dispatch('refresh_token', resData.refreshToken)
         store.dispatch('change_auth', true)
         store.dispatch('set_user', resData.email)
         store.dispatch('set_user_name', resData.name)
         store.dispatch('set_user_surname', resData.surname)
-        window.$cookies.set('logged', true, '7d')
         router.push({
             path: new URLSearchParams(window.location.search).get('redirect')  || '/dashboard'
         })

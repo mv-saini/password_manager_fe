@@ -1,5 +1,6 @@
 <script setup>
-    import { reactive, computed, onMounted, ref, watch } from 'vue';
+    import router from '@/router';
+import { reactive, computed, onMounted, ref, watch } from 'vue';
     import { useStore } from 'vuex';
 
     const store = useStore()
@@ -98,6 +99,29 @@
         setTimeout(() => lastOP.value = false, 1200);
     })
 
+    function tokenNotValid(){
+        store.dispatch('access_token', null)
+        store.dispatch('change_auth', false)
+        store.dispatch('set_user', null)
+        store.dispatch('set_user_name', null)
+        store.dispatch('set_user_surname', null)
+        router.push({
+            name: 'login'
+        })
+    }
+
+    async function refreshToken(){
+        const response = await fetch(process.env.VUE_APP_TOKEN, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({"token": computed(() => store.getters.getRefreshToken).value})
+        })
+        const data = await response.json()
+        store.dispatch('access_token', data.accessToken)
+    }
+
     async function getUser() {
         const response = await fetch(process.env.VUE_APP_USER + '/' + computed(() => store.getters.getUser).value, {
             method: 'GET',
@@ -122,6 +146,11 @@
                 contactInfo.Phone = resData.user.phone.split("-")[1]
                 contactInfo.Code = resData.user.phone.split("-")[0]
             }
+        }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await getUser()
         }
     }
 
@@ -291,6 +320,11 @@
             lastOP.value = true
             await getUser()
         }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await helperUpdate(field, value)
+        }
     }
 
     function checkPass(oldPass, newPass, confirmPass){
@@ -336,6 +370,11 @@
             errorModiyDetailMsg.value = "Old password isn't correct"
             lastOP.value = false
             await getUser()
+        }
+        else if(response.status == 403) tokenNotValid()
+        else if(response.status == 498){
+            await refreshToken()
+            await changePassword(oldPass, newPass, confirmPass)
         }
         contactInfo.OldPassword = null
         contactInfo.NewPasword = null

@@ -32,7 +32,6 @@ function logout() {
   store.dispatch('set_user', null)
   store.dispatch('set_user_name', null)
   store.dispatch('set_user_surname', null)
-  window.$cookies.remove('logged')
   router.push({
     name: 'home'
   })

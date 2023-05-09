@@ -4,6 +4,7 @@ import createPersistedState from "vuex-persistedstate";
 const store = createStore({
     state:{
         token: null,
+        refreshToken: null,
         authenticated: false,
         user: null,
         userName: null,
@@ -15,6 +16,9 @@ const store = createStore({
     getters:{
         getToken(state){
             return state.token
+        },
+        getRefreshToken(state){
+            return state.refreshToken
         },
         getAuth(state){
             return state.authenticated 
@@ -42,6 +46,9 @@ const store = createStore({
         ACCESS_TOKEN(state, token){
             state.token = token
         },
+        REFRESH_TOKEN(state, token){
+            state.refreshToken = token
+        },
         CHANGE_AUTH(state, update){
             state.authenticated = update
         },
@@ -67,6 +74,9 @@ const store = createStore({
     actions:{
         access_token({ commit }, token){
             commit('ACCESS_TOKEN', token)
+        },
+        refresh_token({ commit }, token){
+            commit('REFRESH_TOKEN', token)
         },
         change_auth({ commit }, update){
             commit('CHANGE_AUTH', update)
