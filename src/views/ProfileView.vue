@@ -101,6 +101,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
 
     function tokenNotValid(){
         store.dispatch('access_token', null)
+        store.dispatch('refresh_token', null)
         store.dispatch('change_auth', false)
         store.dispatch('set_user', null)
         store.dispatch('set_user_name', null)

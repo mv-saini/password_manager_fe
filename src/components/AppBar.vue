@@ -26,15 +26,22 @@ function changeTheme() {
   }
 }
 
-function logout() {
-  store.dispatch('access_token', null)
-  store.dispatch('change_auth', false)
-  store.dispatch('set_user', null)
-  store.dispatch('set_user_name', null)
-  store.dispatch('set_user_surname', null)
-  router.push({
-    name: 'home'
+async function logout() {
+  const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/logout/' + computed(() => store.getters.getRefreshToken).value,{
+        method: 'Delete',
   })
+   if(response.status == 204){
+    store.dispatch('access_token', null)
+    store.dispatch('refresh_token', null)
+    store.dispatch('change_auth', false)
+    store.dispatch('set_user', null)
+    store.dispatch('set_user_name', null)
+    store.dispatch('set_user_surname', null)
+    router.push({
+      name: 'home'
+    })
+   }
+  
 }
 
 </script>

@@ -236,7 +236,6 @@ import router from '@/router';
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
         })
-        console.log(response.status)
         if (response.status == 200) {
             const data = await response.json()
             vault.value = data.vault
@@ -255,6 +254,7 @@ import router from '@/router';
 
     function tokenNotValid(){
         store.dispatch('access_token', null)
+        store.dispatch('refresh_token', null)
         store.dispatch('change_auth', false)
         store.dispatch('set_user', null)
         store.dispatch('set_user_name', null)
