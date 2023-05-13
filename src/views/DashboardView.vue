@@ -63,10 +63,37 @@ import router from '@/router';
     ]
 
     /**An array of objects that contains the options for each record */
-    const options = [
-        { title: 'Copy Email' },
-        { title: 'Copy Password' },
-        { title: 'Delete record' },
+    const optionsAccounts = [
+        { 
+            title: 'Copy Email', 
+            id: 1
+        },
+        { 
+            title: 'Copy Password',
+            id: 2 
+        }
+    ]
+
+    const optionsCC = [
+        { 
+            title: 'Copy Card Number', 
+            id: 3
+        },
+        { 
+            title: 'Copy Card Name',
+            id: 4 
+        }
+    ]
+
+    const optionsIdentity = [
+        { 
+            title: 'Copy Identity Number', 
+            id: 5
+        },
+        { 
+            title: 'Copy Identity Name',
+            id: 6 
+        }
     ]
 
     /**An object that contains the values of input inside a form */
@@ -138,18 +165,30 @@ import router from '@/router';
     function select() {
         allSelected.value = false
     }
-
+    
     /**Function that does a specific action when a certain option is selected */
     function optionExe(index, val) {
         switch(index){
-            case 0: 
+            case 0:
+                deleteRecord([val._id])
+                break;
+            case 1: 
                 navigator.clipboard.writeText(val.email)
                 break;
-            case 1:
+            case 2:
                 navigator.clipboard.writeText(val.password)
                 break;
-            case 2:
-                deleteRecord([val._id])
+            case 3:
+                navigator.clipboard.writeText(val.card_number)
+                break;
+            case 4:
+                navigator.clipboard.writeText(val.card_holder)
+                break;
+            case 5:
+                navigator.clipboard.writeText(val.id_number)
+                break;
+            case 6:
+                navigator.clipboard.writeText(val.id_holder)
                 break;
         }
         
@@ -165,7 +204,7 @@ import router from '@/router';
         //create one for elements too
         if (selectedItems.value.length <= 0) return
         if(!b) addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
-        else selectedItems.value.map(x => addRemoveToFromFolder.value.map(folder => removeRecordsFromFolders(folder, x)))
+        else selectedItems.value.map(x => addRemoveToFromFolder.value.map(async folder => await removeRecordsFromFolders(folder, x)))
             
         
         selectedItems.value = []
@@ -366,6 +405,7 @@ import router from '@/router';
         let _id = recordSelected.value._id
         delete recordSelected.value._id
         delete recordSelected.value.user_id
+        sendCorrectData(recordSelected.value)
         const response = await fetch(process.env.VUE_APP_VAULT + '/' + _id, {
             method: 'PUT',
             headers: {
@@ -392,6 +432,7 @@ import router from '@/router';
 
     /**Calls the back-end to add a new record */
     async function addRecord() {
+        sendCorrectData(data)
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'POST',
             headers: {
@@ -411,7 +452,67 @@ import router from '@/router';
             await addRecord()
         }
         clearData()
+        dialog.value = false
         selectedItems.value = []
+    }
+
+    function sendCorrectData(arr){
+        switch(arr.tags){
+            case 'Accounts': 
+                sendAccounts(arr)
+                break;
+
+            case 'Credit Card': 
+                sendCC(arr)
+                break;
+
+            case 'Identity': 
+                sendIdentity(arr)
+                break;
+
+            case 'Notes': 
+                sendNotes(arr)
+                break;
+        }
+    }
+
+    function sendAccounts(arr){
+        arr.card_holder = ''
+        arr.expiry = null
+        arr.cvv = ''
+        arr.card_number = null
+        arr.id_number = null
+        arr.id_holder = ''
+    }
+
+    function sendCC(arr){
+        arr.email = ''
+        arr.link = ''
+        arr.password = ''
+        arr.id_number = null
+        arr.id_holder = ''
+    }
+
+    function sendIdentity(arr){
+        arr.email = ''
+        arr.link = ''
+        arr.password = ''
+        arr.card_holder = ''
+        arr.expiry = null
+        arr.cvv = ''
+        arr.card_number = null
+    }
+
+    function sendNotes(arr){
+        arr.email = ''
+        arr.link = ''
+        arr.password = ''
+        arr.card_holder = ''
+        arr.expiry = null
+        arr.cvv = ''
+        arr.card_number = null
+        arr.id_number = null
+        arr.id_holder = ''
     }
 
     /**Calls the back-end to add a record/s to folder/s */
@@ -442,7 +543,7 @@ import router from '@/router';
         data.link = ''
         data.notes = ''
         data.password = ''
-        data.tags = []
+        data.tags = ['Accounts']
         data.favorite = false
         data.card_holder = ''
         data.expiry = null
@@ -676,7 +777,7 @@ import router from '@/router';
                                     </div>
                                     <div class="pa-3 text-h6">
                                         {{ item.name }}
-                                        <div class="text-caption">
+                                        <div v-if="item.tags == 'Accounts'" class="text-caption">
                                             {{ item.email }}
                                         </div>
                                     </div>
@@ -687,14 +788,55 @@ import router from '@/router';
                                 <v-icon class="popOut" size="small" icon="mdi-star" v-else @click="addRemoveToFromFav(item, false)"></v-icon>
                             </v-col>
                             <v-col cols="2">
-                                <v-menu>
+                                <v-menu v-if="item.tags == 'Accounts'">
                                     <template v-slot:activator="{ props }">
                                         <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
                                     </template>
                                     <v-list>
-                                        <v-list-item v-for="(option, index) in options" :key="index" :value="index"
-                                            @click="optionExe(index, item)">
+                                        <v-list-item v-for="option in optionsAccounts" :key="option.id" :value="option.id"
+                                            @click="optionExe(option.id, item)">
                                             <v-list-item-title>{{ option.title }}</v-list-item-title>
+                                        </v-list-item>
+                                        <v-list-item @click="optionExe(0, item)">
+                                            <v-list-item-title>Remove Record</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                                <v-menu v-if="item.tags == 'Credit Card'">
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                                    </template>
+                                    <v-list>
+                                        <v-list-item v-for="option in optionsCC" :key="option.id" :value="option.id"
+                                            @click="optionExe(option.id, item)">
+                                            <v-list-item-title>{{ option.title }}</v-list-item-title>
+                                        </v-list-item>
+                                        <v-list-item @click="optionExe(0, item)">
+                                            <v-list-item-title>Remove Record</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                                <v-menu v-if="item.tags == 'Identity'">
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                                    </template>
+                                    <v-list>
+                                        <v-list-item v-for="option in optionsIdentity" :key="option.id" :value="option.id"
+                                            @click="optionExe(option.id, item)">
+                                            <v-list-item-title>{{ option.title }}</v-list-item-title>
+                                        </v-list-item>
+                                        <v-list-item @click="optionExe(0, item)">
+                                            <v-list-item-title>Remove Record</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                                <v-menu v-if="item.tags == 'Notes'">
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                                    </template>
+                                    <v-list>
+                                        <v-list-item @click="optionExe(0, item)">
+                                            <v-list-item-title>Remove Record</v-list-item-title>
                                         </v-list-item>
                                     </v-list>
                                 </v-menu>
@@ -764,7 +906,7 @@ import router from '@/router';
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
+                <v-btn color="blue-darken-1" variant="text" @click="dialog = false, getVault()">
                     Close
                 </v-btn>
                 <v-btn color="blue-darken-1" variant="text" @click="update()">
@@ -797,34 +939,34 @@ import router from '@/router';
                                 chips/>
                         </v-col>
                         <v-col v-if="data.tags == 'Accounts'" cols="12" sm="6">
-                            <v-text-field label="Email" v-model="data.email" />
+                            <v-text-field clearable label="Email" v-model="data.email" />
                         </v-col>
                         <v-col v-if="data.tags == 'Accounts'" cols="12" sm="6">
-                            <v-text-field label="Password" v-model="data.password" />
+                            <v-text-field clearable label="Password" v-model="data.password" />
                         </v-col>
                         <v-col v-if="data.tags == 'Accounts'" cols="12">
-                            <v-text-field label="Link" v-model="data.link" />
+                            <v-text-field clearable label="Link" v-model="data.link" />
                         </v-col>
                         <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
-                            <v-text-field label="Card Holder Name" v-model="data.card_holder" />
+                            <v-text-field clearable label="Card Holder Name" v-model="data.card_holder" />
                         </v-col>
                         <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
-                            <v-text-field label="Card Number" v-model="data.card_number" />
+                            <v-text-field clearable label="Card Number" v-model="data.card_number" />
                         </v-col>
                         <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
-                            <v-text-field label="Expiry" v-model="data.expiry" />
+                            <v-text-field clearable label="Expiry" v-model="data.expiry" />
                         </v-col>
                         <v-col v-if="data.tags == 'Credit Card'" cols="12" sm="6">
-                            <v-text-field label="CVV" v-model="data.cvv" />
+                            <v-text-field clearable label="CVV" v-model="data.cvv" />
                         </v-col>
                         <v-col v-if="data.tags == 'Identity'" cols="12" sm="6">
-                            <v-text-field label="ID Holder Name" v-model="data.id_holder" />
+                            <v-text-field clearable label="ID Holder Name" v-model="data.id_holder" />
                         </v-col>
                         <v-col v-if="data.tags == 'Identity'" cols="12" sm="6">
-                            <v-text-field label="ID Number" v-model="data.id_number" />
+                            <v-text-field clearable label="ID Number" v-model="data.id_number" />
                         </v-col>
                         <v-col cols="12">
-                            <v-textarea label="Notes/Details" v-model="data.notes"></v-textarea>
+                            <v-textarea clearable label="Notes/Details" v-model="data.notes"></v-textarea>
                         </v-col>
                     </v-row>
                 </v-container>
