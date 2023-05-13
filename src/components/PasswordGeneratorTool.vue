@@ -21,7 +21,7 @@
     })
 
     watch(lengthSlider, () => {
-        if(lengthSlider.value >= sliderMin.value && lengthSlider.value <= sliderMax.value && chars.value.trim().length > 0) getPassword()
+        checkBeforeGenerate()
     })
 
     watch([uppercase, lowercase, number, symbol], () => shouldContain())
@@ -54,6 +54,10 @@
     }
 
     function copyPassword(){navigator.clipboard.writeText(passGenerated.value)}
+
+    function checkBeforeGenerate(){
+        if(lengthSlider.value >= sliderMin.value && lengthSlider.value <= sliderMax.value && chars.value.trim().length > 0) getPassword()
+    }
 
 </script>
 
@@ -98,11 +102,11 @@
                     <v-col cols="12" class="d-flex d-md-none">
                         <v-text-field v-model="passGenerated" label="Password Generated" readonly
                         append-icon="mdi-content-copy" @click:append="copyPassword()"
-                        append-inner-icon="mdi-refresh" @click:append-inner="getPassword()"/>
+                        append-inner-icon="mdi-refresh" @click:append-inner="checkBeforeGenerate()"/>
                     </v-col>
                     <v-col cols="12" class="d-none d-md-flex">
                         <v-text-field v-model="passGenerated" label="Password Generated" readonly append-icon="mdi-content-copy" @click:append="copyPassword()"
-                            append-inner-icon="mdi-refresh" @click:append-inner="getPassword()" prepend-icon="mdi-lock"/>
+                            append-inner-icon="mdi-refresh" @click:append-inner="checkBeforeGenerate()" prepend-icon="mdi-lock"/>
                     </v-col>
                 </v-row>
             </v-col>
