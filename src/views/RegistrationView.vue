@@ -19,6 +19,7 @@
     terms: false,
   });
 
+  /**Rules used by the vuelidator to validate the form */
   const rules = computed(() => {
     return{
         name: { required: helpers.withMessage('Name is required', required), 
@@ -52,14 +53,17 @@
     }
   })
 
+  /**result of the validation */
   const v$ = useVuelidate(rules, data)
 
+  /**before calling back-end checks if data is valid */
   async function checkSubmit(){
     const result = await v$.value.$validate()
     if(result)
         await submit() 
   }
 
+  /**Calls the back-end to register the user */
   async function submit(){
     await fetch(process.env.VUE_APP_REGISTER,{
         method: 'POST',

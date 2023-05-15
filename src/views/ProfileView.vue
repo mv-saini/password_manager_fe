@@ -99,6 +99,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         setTimeout(() => lastOP.value = false, 1200);
     })
 
+    /**If the token is not valid removes the authentication */
     function tokenNotValid(){
         store.dispatch('access_token', null)
         store.dispatch('refresh_token', null)
@@ -111,6 +112,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         })
     }
 
+    /**Calls the backend to refresh token */
     async function refreshToken(){
         const response = await fetch(process.env.VUE_APP_TOKEN, {
             method: 'POST',
@@ -155,6 +157,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Show a specific data for modification */
     function show(label){
         showAll.value = false
         showComp.value = label
@@ -163,6 +166,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
     const errorModiyDetail = ref(undefined)
     const errorModiyDetailMsg = ref('')
 
+    /**Checks the data fields before sending them to back-end */
     async function checkUpdate(field, value){
         switch(field.toUpperCase()){
             case 'NAME': return checkUpdateNameSurname(field, value)
@@ -174,6 +178,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Checks the user name and surname */
     function checkUpdateNameSurname(field, value){
         if(value == ''){
             errorModiyDetail.value = true
@@ -186,6 +191,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Checks the suer Birthday */
     function checkUpdateBirthday(value){
         if(value.split('-')[0] == 'null' || value.split('-')[1] == 'null' || value.split('-')[2] == 'null'){
                 errorModiyDetail.value = true
@@ -242,6 +248,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
             }
     }
 
+    /**Checks the recovery mail */
     function checkUpdateRecoveryMail(value){
         var reg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         if(reg.test(value)){
@@ -255,11 +262,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Removes the recovery mail */
     async function deleteRecoveryMail(field, value){
         helperUpdate(field, value)
         addRecoveryMail.value = null
     }
 
+    /**Checks the user phone number */
     function checkUpdatePhone(value){
         let code = value.split('-')[0]
         let phone = value.split('-')[1]
@@ -296,18 +305,21 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         return true
     }
 
+    /**Removes the phone number */
     async function deletePhone(field, value){
         await helperUpdate(field, value)
         contactInfo.Code = null
         contactInfo.Phone = null
         addPhone.value = null
     }
-
+    
+    /**Updates the specified field and its value with check function*/
     async function update(field, value){
         if(!await checkUpdate(field, value)) return
         await helperUpdate(field, value)
     }
 
+    /**Updates the specified field and its value without a check Function */
     async function helperUpdate(field, value){
         const response = await fetch(process.env.VUE_APP_USER + "/details", {
             method: 'POST',
@@ -328,6 +340,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Checks if password fields are valid */
     function checkPass(oldPass, newPass, confirmPass){
         if(oldPass == null){
             errorModiyDetail.value = true
@@ -350,6 +363,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
         }
     }
 
+    /**Calls the back-end to change user password */
     async function changePassword(oldPass, newPass, confirmPass){
         if(!checkPass(oldPass, newPass, confirmPass)) return
         const response = await fetch(process.env.VUE_APP_USER + "/password", {

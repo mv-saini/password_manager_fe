@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { computed } from 'vue'
 import store  from '../store/index'
 
+//Defined some routes, each route maps to a component.
 const routes = [
   {
     path: '/',
@@ -41,11 +42,13 @@ const routes = [
   }
 ]
 
+//Create the router instance and pass the `routes` option
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
 
+//before routing checks if authenticated if not send the user to login page
 router.beforeEach((to) => {
   if(to.meta.requiresAuth && !computed(() => store.getters.getAuth).value){
     document.title = 'Login'
@@ -57,6 +60,7 @@ router.beforeEach((to) => {
   document.title = to.meta.title
 }) 
 
+//before routing checks if user is a guest if not send to dashboard page
 router.beforeEach((to) => {
   if(to.meta.guest && computed(() => store.getters.getAuth).value){
     document.title = 'Dashboard'

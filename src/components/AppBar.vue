@@ -9,12 +9,14 @@ const theme = useTheme()
 const log = computed(() => store.getters.getAuth)
 theme.global.name.value = computed(() => store.getters.getTheme).value
 
+/**toggles the theme of the app */
 function toggleTheme() {
   store.dispatch('is_dark', !computed(() => store.getters.getDarkMode).value)
   theme.global.name.value = computed(() => store.getters.getDarkMode).value ? "dark" : "light";
   changeTheme()
 }
 
+/**changes the values of theme in vuex store */
 function changeTheme() {
   if (computed(() => store.getters.getDarkMode).value) {
     store.dispatch('change_theme', 'dark')
@@ -26,6 +28,7 @@ function changeTheme() {
   }
 }
 
+/**calls the back-end to logout the user */
 async function logout() {
   const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/logout/' + computed(() => store.getters.getRefreshToken).value,{
         method: 'Delete',

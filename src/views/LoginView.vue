@@ -12,6 +12,7 @@
     password: ''
   }); 
 
+  /**Checks the data before sending it to the back-end */
   async function checkSubmit(){
     if(data.email == '' || data.password == ''){
         check.value = true
@@ -22,6 +23,7 @@
     }
   }
 
+  /**Calls the back-end to log the user in if email and password is correct */
   async function submit(){
     const response = await fetch(process.env.VUE_APP_LOGIN,{
         method: 'POST',

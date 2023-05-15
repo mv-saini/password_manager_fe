@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, watch, computed } from 'vue';
+    import { ref, watch, computed, onMounted } from 'vue';
     import { useStore } from 'vuex';
     import PasswordGeneratorTool from '@/components/PasswordGeneratorTool.vue';
 
@@ -10,15 +10,20 @@
             'title': 'Password Generator',
         },
     ])
-
     const selectedTool = ref(toolList.value.at(0).title)
 
+    onMounted(() => {
+        lastOP.value = true
+    })
+
+    /**Display a specific tool */
     function displayTool(index){
         selectedTool.value = toolList.value.at(index).title
+        lastOP.value = true
     }
 
     watch(lastOP, () => {
-        setTimeout(() => lastOP.value = false, 1000);
+        setTimeout(() => lastOP.value = false, 1200);
     })
     
 </script>

@@ -26,6 +26,7 @@
 
     watch([uppercase, lowercase, number, symbol], () => shouldContain())
 
+    /**Generates new password */
     function getPassword() {
         const length = lengthSlider.value
         let password = ''
@@ -36,6 +37,7 @@
         else getPassword()
     }
 
+    /**Checks if the generated password is valid */
     function checkPass(password){
         const valid = ref([true, true, true, true])
         if(uppercase.value) valid.value[0] = /[A-Z]/.test(password)
@@ -45,6 +47,7 @@
         return valid.value[0] && valid.value[1] && valid.value[2] && valid.value[3]
     }
 
+    /**What should the generated password contain */
     function shouldContain(){
         chars.value = ''
         if(uppercase.value) chars.value = chars.value.concat(stringUppercase)
@@ -53,8 +56,10 @@
         if(symbol.value) chars.value = chars.value.concat(stringSymbol)
     }
 
+    /**Copies password to clipboard */
     function copyPassword(){navigator.clipboard.writeText(passGenerated.value)}
 
+    /**Before generating checks if value is valid and user has selected atleast one checkbox */
     function checkBeforeGenerate(){
         if(lengthSlider.value >= sliderMin.value && lengthSlider.value <= sliderMax.value && chars.value.trim().length > 0) getPassword()
     }

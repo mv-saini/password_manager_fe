@@ -42,7 +42,7 @@ import router from '@/router';
     /**Contains the filtered records from the vault */
     const filteredList = ref([])
 
-    /** */
+    /**To remember the last filter */
     const lastFilter = ref("")
 
     /**An array that contains all the folders created by the user */
@@ -62,7 +62,7 @@ import router from '@/router';
         { icon: 'mdi-note', text: 'Notes' },
     ]
 
-    /**An array of objects that contains the options for each record */
+    /**An array of objects that contains the options for each Account record */
     const optionsAccounts = [
         { 
             title: 'Copy Email', 
@@ -73,7 +73,8 @@ import router from '@/router';
             id: 2 
         }
     ]
-
+    
+    /**An array of objects that contains the options for each Credit card record */
     const optionsCC = [
         { 
             title: 'Copy Card Number', 
@@ -84,7 +85,8 @@ import router from '@/router';
             id: 4 
         }
     ]
-
+    
+    /**An array of objects that contains the options for each Identity card record */
     const optionsIdentity = [
         { 
             title: 'Copy Identity Number', 
@@ -116,10 +118,10 @@ import router from '@/router';
     /**An array that contains the names of folders that will contain the record*/
     const addRemoveToFromFolder = ref([])
 
-    /** */
+    /**Shows the dialog box for removing a record/s or adding a record/s to a folder/s  */
     const addRemoveToFromFolderDialog = ref(false)
 
-    /** */
+    /**To choose if adding or removing record/s to/from a folder/s */
     const addRemoveToFromFolderOption = ref(false)
 
     /**Rules that need to be met before submitting the form */
@@ -206,7 +208,6 @@ import router from '@/router';
         if(!b) addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
         else selectedItems.value.map(x => addRemoveToFromFolder.value.map(async folder => await removeRecordsFromFolders(folder, x)))
             
-        
         selectedItems.value = []
         allSelected.value = false
         addRemoveToFromFolder.value = []
@@ -291,6 +292,7 @@ import router from '@/router';
         
     }
 
+    /**If the token is not valid removes the authentication */
     function tokenNotValid(){
         store.dispatch('access_token', null)
         store.dispatch('refresh_token', null)
@@ -303,6 +305,7 @@ import router from '@/router';
         })
     }
 
+    /**Calls the backend to refresh token */
     async function refreshToken(){
         const response = await fetch(process.env.VUE_APP_TOKEN, {
             method: 'POST',
@@ -456,6 +459,7 @@ import router from '@/router';
         selectedItems.value = []
     }
 
+    /**Simple function to send the correct data to back-end */
     function sendCorrectData(arr){
         switch(arr.tags){
             case 'Accounts': 
@@ -476,6 +480,7 @@ import router from '@/router';
         }
     }
 
+    /**sends only account data fields */
     function sendAccounts(arr){
         arr.card_holder = ''
         arr.expiry = null
@@ -485,6 +490,7 @@ import router from '@/router';
         arr.id_holder = ''
     }
 
+    /**sends only credit card data fields */
     function sendCC(arr){
         arr.email = ''
         arr.link = ''
@@ -493,6 +499,7 @@ import router from '@/router';
         arr.id_holder = ''
     }
 
+    /**sends only identity data fields */
     function sendIdentity(arr){
         arr.email = ''
         arr.link = ''
@@ -503,6 +510,7 @@ import router from '@/router';
         arr.card_number = null
     }
 
+    /**sends only notes data field */
     function sendNotes(arr){
         arr.email = ''
         arr.link = ''
