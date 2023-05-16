@@ -634,29 +634,29 @@ import router from '@/router';
                                 <div>
                                     All tags
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" v-if="lastFilter == 'All'" style="color: #2196f3;" @click="filterTags('All')">
-                                    <v-icon size="small" icon="mdi-set-all"></v-icon>
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-if="lastFilter == 'All'" style="color: #2196f3;" @click="filterTags('All')">
+                                    <v-icon size="small" icon="mdi-set-all" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" v-else @click="filterTags('All')">
-                                    <v-icon size="small" icon="mdi-set-all"></v-icon>
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-else @click="filterTags('All')">
+                                    <v-icon size="small" icon="mdi-set-all" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" v-if="lastFilter == 'Favorite'" style="color: #2196f3;" @click="filterTags('Favorite')">
-                                    <v-icon size="small" icon="mdi-star"></v-icon>
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-if="lastFilter == 'Favorite'" style="color: #2196f3;" @click="filterTags('Favorite')">
+                                    <v-icon size="small" icon="mdi-star" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     Favorite
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer" v-else @click="filterTags('Favorite')">
-                                    <v-icon size="small" icon="mdi-star"></v-icon>
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-else @click="filterTags('Favorite')">
+                                    <v-icon size="small" icon="mdi-star" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     Favorite
                                 </div>
                                 <div class="pl-xl-6 popOut changePointer" @click="filterTags(tag.text)" v-for="tag in tags" :key="tag.text">
-                                    <div v-if="lastFilter == tag.text" style="color: #2196f3">
-                                        <v-icon size="small" :icon="tag.icon"></v-icon>
+                                    <div v-if="lastFilter == tag.text" style="color: #2196f3" class="d-flex align-center">
+                                        <v-icon size="small" :icon="tag.icon" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                         {{ tag.text }}
                                     </div>
-                                    <div v-else>
-                                        <v-icon size="small" :icon="tag.icon"></v-icon>
+                                    <div class="d-flex align-center" v-else>
+                                        <v-icon size="small" :icon="tag.icon" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                         {{ tag.text }}
                                     </div>
                                 </div>
@@ -673,12 +673,12 @@ import router from '@/router';
                                     </div>
                                 </div>
                                 <div class="pl-xl-6 d-flex" v-for="folder in folders" :key="folder.k">
-                                        <div class="popOut changePointer" v-if="lastFilter == folder.k" style="color: #2196f3" @click="filterFolders(folder.k)">
-                                            <v-icon size="small" icon="mdi-folder"></v-icon>
+                                        <div class="popOut changePointer d-flex align-center" v-if="lastFilter == folder.k" style="color: #2196f3" @click="filterFolders(folder.k)">
+                                            <v-icon size="small" icon="mdi-folder" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                             {{ folder.k }}
                                         </div>
-                                        <div class="popOut changePointer" v-else @click="filterFolders(folder.k)">
-                                            <v-icon size="small" icon="mdi-folder"></v-icon>
+                                        <div class="popOut changePointer d-flex align-center" v-else @click="filterFolders(folder.k)">
+                                            <v-icon size="small" icon="mdi-folder" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                             {{ folder.k }}
                                         </div>
                                         <v-spacer></v-spacer>
@@ -726,7 +726,7 @@ import router from '@/router';
                     <v-col cols="2">
                         <v-checkbox class="mt-5" @click="selectAll()" v-model="allSelected"></v-checkbox>
                     </v-col>
-                    <v-col cols="8">
+                    <v-col cols="7" sm="8">
                         <div class="text-h6">
                             Name
                         </div>
@@ -778,12 +778,12 @@ import router from '@/router';
                                 <v-checkbox class="mt-5" v-model="selectedItems" @click="select()"
                                     :value="item._id"></v-checkbox>
                             </v-col>
-                            <v-col cols="7">
+                            <v-col cols="6" sm="7">
                                 <div @click="dialogOption = false, showDetails(item)" class="popOut text-start align-center d-flex flex-row changePointer">
                                     <div v-for="tag in tags" :key="tag.text">
-                                        <v-icon v-if="item.tags == tag.text" size="small" :icon="tag.icon"></v-icon>
+                                        <v-icon v-if="item.tags == tag.text" size="small" :icon="tag.icon" class="d-none d-sm-flex"></v-icon>
                                     </div>
-                                    <div class="pa-3 text-h6">
+                                    <div class="pa-sm-3 text-h6">
                                         {{ item.name }}
                                         <div v-if="item.tags == 'Accounts'" class="text-caption">
                                             {{ item.email }}

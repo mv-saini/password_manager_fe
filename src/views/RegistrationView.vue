@@ -91,9 +91,9 @@
     <v-form @submit.prevent="checkSubmit">
         <v-container>
             <v-row>
-                <v-col md="4" class="d-none d-md-flex"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="10" md="2">
+                <v-col lg="4" class="d-none d-lg-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="10" lg="2">
                     <v-text-field v-model="data.name" type="text" label="Name" clearable></v-text-field>
                     <div
                     class="text-caption text-red"
@@ -103,9 +103,9 @@
                         {{ error.$message }}
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="10" md="2">
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="10" lg="2">
                     <v-text-field v-model="data.surname" type="text" label="Surname" clearable></v-text-field>
                     <div
                     class="text-caption text-red"
@@ -115,14 +115,14 @@
                         {{ error.$message }}
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col md="4" class="d-none d-md-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col lg="4" class="d-none d-lg-flex"/>
             </v-row>
 
             <v-row>
-                <v-col md="4" class="d-none d-md-flex"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="10" md="4">
+                <v-col lg="4" class="d-none d-lg-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="10" lg="4">
                     <v-text-field v-model="data.email" type="text" label="Email address" clearable></v-text-field>
                     <div
                     class="text-caption text-red"
@@ -132,14 +132,14 @@
                         {{ data.email + error.$message }}
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col md="4" class="d-none d-md-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col lg="4" class="d-none d-lg-flex"/>
             </v-row>
 
             <v-row>
-                <v-col md="4" class="d-none d-md-flex"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                 <v-col cols="10" md="4">
+                <v-col lg="4" class="d-none d-lg-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                 <v-col cols="10" lg="4">
                     <v-text-field v-model="data.password" :type="showHidePass ? 'text' : 'password'" label="Password" clearable
                     :append-inner-icon="showHidePass ? 'mdi-eye' : 'mdi-eye-off'" @click:append-inner="showHidePass = !showHidePass"></v-text-field>
                     <div
@@ -161,14 +161,14 @@
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="0" md="4" class="d-none d-md-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="0" lg="4" class="d-none d-lg-flex"/>
             </v-row>
 
             <v-row>
-                <v-col md="4" class="d-none d-md-flex"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col cols="10" md="4">
+                <v-col lg="4" class="d-none d-lg-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col cols="10" lg="4">
                     <v-text-field v-model="data.confirmation" :type="showHideConfimPass ? 'text' : 'password'" label="Confirm Password" clearable
                     :append-inner-icon="showHideConfimPass ? 'mdi-eye' : 'mdi-eye-off'" @click:append-inner="showHideConfimPass = !showHideConfimPass"></v-text-field>
                     <div
@@ -184,14 +184,14 @@
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col md="4" class="d-none d-md-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col lg="4" class="d-none d-lg-flex"/>
             </v-row>
         
             <v-row>
-                <v-col md="4" class="d-none d-md-flex"/>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                 <v-col cols="10" md="4">
+                <v-col lg="4" class="d-none d-lg-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                 <v-col cols="10" lg="4">
                     <v-checkbox v-model="data.terms" color="secondary" label="I agree to site terms and conditions"/>
                     <div
                     class="text-caption text-red"
@@ -201,8 +201,8 @@
                         {{ error.$message }}
                     </div>
                 </v-col>
-                <v-col cols="1" class="d-flex d-md-none"/>
-                <v-col md="4" class="d-none d-md-flex"/>
+                <v-col cols="1" class="d-flex d-lg-none"/>
+                <v-col lg="4" class="d-none d-lg-flex"/>
             </v-row>
 
             

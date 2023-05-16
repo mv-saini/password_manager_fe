@@ -85,19 +85,19 @@
     <v-form  @submit.prevent="checkSubmit">
         <v-container>
             <v-row>
-                <v-col cols="2" md="4"/>
-                <v-col cols="8" md="4">
+                <v-col cols="2" lg="4"/>
+                <v-col cols="8" lg="4">
                     <v-text-field type="text" v-model="data.email" label="Email address" required clearable/> 
                 </v-col>
-                <v-col cols="2" md="4"/>
+                <v-col cols="2" lg="4"/>
             </v-row>
             <v-row>
-                <v-col cols="2" md="4"/>
-                <v-col cols="8" md="4">
+                <v-col cols="2" lg="4"/>
+                <v-col cols="8" lg="4">
                     <v-text-field v-model="data.password" label="Password" required clearable :type="showHidePass ? 'text' : 'password'"
                     :append-inner-icon="showHidePass ? 'mdi-eye' : 'mdi-eye-off'" @click:append-inner="showHidePass = !showHidePass"/> 
                 </v-col>
-                <v-col cols="2" md="4"/>
+                <v-col cols="2" lg="4"/>
             </v-row>
             <v-row>
                 <v-col cols="4"/>

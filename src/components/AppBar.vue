@@ -52,10 +52,12 @@ async function logout() {
 <template>
   <v-app-bar color="blue" prominent>
     <v-spacer></v-spacer>
-    <v-icon class="mr-5" icon="mdi-security"></v-icon>
+    <v-icon class="mr-5" icon="mdi-security" @click="router.push({name:'home'})"></v-icon>
     <v-toolbar-items v-if="log">
-      <v-btn to="dashboard">Dashboard</v-btn>
-      <v-btn to="tools">Tools</v-btn>
+      <v-btn to="dashboard" class="d-none d-sm-flex">Dashboard</v-btn>
+      <v-btn to="dashboard" icon="mdi-view-dashboard" class="d-flex d-sm-none"></v-btn>
+      <v-btn to="tools" class="d-none d-sm-flex">Tools</v-btn>
+      <v-btn to="tools" icon="mdi-tools" class="d-flex d-sm-none"></v-btn>
     </v-toolbar-items>
     <v-spacer></v-spacer>
     <v-btn @click="toggleTheme" icon="mdi-theme-light-dark"></v-btn>

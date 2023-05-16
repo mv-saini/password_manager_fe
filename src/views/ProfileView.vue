@@ -417,9 +417,9 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
 
     <v-container class="mt-16 unselectable">
         <v-row>
-            <v-col cols="0" lg="3"></v-col>
+            <v-col cols="0" xl="3"></v-col>
 
-            <v-col cols="12" lg="6" v-if="showAll">
+            <v-col cols="12" xl="6" v-if="showAll">
                 <v-row class="d-flex flex-column">
                     <v-col class="d-flex align-center justify-center">
                         <v-avatar color="blue-darken-4" size="large">
@@ -562,13 +562,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Name'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Name'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="2">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Name</div>
                     </v-col>
-                    <v-col cols="10"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -591,13 +591,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Birthday'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Birthday'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="2">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Birthday</div>
                     </v-col>
-                    <v-col cols="10"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -640,13 +640,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Gender'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Gender'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="2">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Gender</div>
                     </v-col>
-                    <v-col cols="10"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -677,13 +677,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Email'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Email'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="2">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Email</div>
                     </v-col>
-                    <v-col cols="10"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -745,13 +745,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Phone'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Phone'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="3">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Phone Number</div>
                     </v-col>
-                    <v-col cols="9"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -814,13 +814,13 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="12" lg="6" v-if="showComp == 'Password'">
+            <v-col cols="12" xl="6" v-if="showComp == 'Password'">
                 <v-row>
-                    <v-col class="d-flex align-center justify-space-around" cols="2">
+                    <v-col class="d-flex align-center justify-left" cols="12" sm="2">
                         <v-icon class="popOut" icon="mdi-arrow-left" @click="goBack()"></v-icon>
                         <div class="text-h5">Password</div>
                     </v-col>
-                    <v-col cols="10"></v-col>
+                    <v-col cols="0" sm="10"></v-col>
                     <v-divider></v-divider>
                 </v-row>
                 <v-row class="mt-16">
@@ -878,7 +878,7 @@ import { reactive, computed, onMounted, ref, watch } from 'vue';
                 </v-row>
             </v-col>
 
-            <v-col cols="0" lg="3"></v-col>
+            <v-col cols="0" xl="3"></v-col>
         </v-row>
     </v-container>
 </template>

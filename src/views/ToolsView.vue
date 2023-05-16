@@ -35,9 +35,9 @@
     <v-container class="mt-16 unselectable">
         <v-container>
             <v-row>
-                <v-col cols="2"/>
+                <v-col cols="0" md="2"/>
 
-                <v-col cols="2">
+                <v-col cols="3" md="2">
                     <v-row>
                         <v-col cols="12">
                             <div rounded class="pa-xl-6 mx-auto" max-width="400">
@@ -60,14 +60,15 @@
                     </v-row>
                 </v-col>
 
-                <v-col cols="6">
+                <v-col cols="9" md="6">
                     <v-row>
                         <v-col cols="12" class="d-flex align-center justify-center">
                             <PasswordGeneratorTool v-if="selectedTool == 'Password Generator'"/>
                         </v-col>
                     </v-row>
                 </v-col>
-                <v-col cols="2"/>
+
+                <v-col cols="0" md="2"/>
             </v-row>
         </v-container>
     </v-container>
