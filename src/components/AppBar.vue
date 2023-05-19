@@ -30,7 +30,7 @@ function changeTheme() {
 
 /**calls the back-end to logout the user */
 async function logout() {
-  const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/logout/' + computed(() => store.getters.getRefreshToken).value,{
+  const response = await fetch(process.env.VUE_APP_USER + '/logout/?refreshToken=' + computed(() => store.getters.getRefreshToken).value,{
         method: 'Delete',
   })
    if(response.status == 204){

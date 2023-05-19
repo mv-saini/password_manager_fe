@@ -65,7 +65,7 @@
 
   /**Calls the back-end to register the user */
   async function submit(){
-    await fetch(process.env.VUE_APP_REGISTER,{
+    await fetch(process.env.VUE_APP_USER + '/register',{
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)

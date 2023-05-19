@@ -25,7 +25,7 @@
 
   /**Calls the back-end to log the user in if email and password is correct */
   async function submit(){
-    const response = await fetch(process.env.VUE_APP_LOGIN,{
+    const response = await fetch(process.env.VUE_APP_USER + '/login',{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
