@@ -129,7 +129,8 @@
                     v-for="error in v$.email.$errors"
                     :key="error.$uid"
                     >
-                        {{ data.email + error.$message }}
+                        <div v-if="data.email != null">{{ data.email + error.$message }}</div>
+                        <div v-else>{{ error.$message }}</div>
                     </div>
                 </v-col>
                 <v-col cols="1" class="d-flex d-lg-none"/>
