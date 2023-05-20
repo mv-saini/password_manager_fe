@@ -1,5 +1,5 @@
 <script setup>
-    import { update, deleteRecoveryMail } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
+    import { update, helperUpdate } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
     import { reactive, computed, ref } from 'vue'
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
@@ -12,6 +12,11 @@
     })
     const color = "#2196f3"  
     const addRecoveryMail = ref(null)
+
+    /**Removes the recovery mail */
+    async function deleteRecoveryMail(field, value) {
+        helperUpdate(field, value)
+    }
 </script>
 
 <template>

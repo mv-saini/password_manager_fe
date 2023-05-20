@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { getUser, tokenNotValid, refreshToken } from './ProfileUserJS';
+import { tokenNotValid, refreshToken } from '../TokenJS/RefreshInvalidToken';
 import store from '@/store'
 
 const months = ref([
@@ -53,14 +53,44 @@ const months = ref([
     },
 ])
 
+export async function getUser() {
+    const response = await fetch(process.env.VUE_APP_USER + '/showdetails?email=' + computed(() => store.getters.getUser).value, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
+        },
+    })
+    if(response.status == 200){
+        const resData = await response.json()
+        if(resData.user.dob != undefined){
+            store.dispatch('set_user_name', resData.user.name)
+            store.dispatch('set_user_surname', resData.user.surname)
+            store.dispatch('set_basic_info_birthday_month', resData.user.dob.split('-')[1])
+            store.dispatch('set_basic_info_birthday_day', resData.user.dob.split('-')[0])
+            store.dispatch('set_basic_info_birthday_year', resData.user.dob.split('-')[2])
+        }
+        store.dispatch('set_basic_info_gender', resData.user.gender)
+        store.dispatch('set_contact_info_recovery_email', resData.user.recovery_mail)
+        if(resData.user.phone != undefined){
+            store.dispatch('set_contact_info_phone', resData.user.phone.split("-")[1])
+            store.dispatch('set_contact_info_code', resData.user.phone.split("-")[0])
+        }
+    }
+    else if(response.status == 403) tokenNotValid()
+    else if(response.status == 498){
+        await refreshToken()
+        await getUser()
+    }
+}
+
 /**Updates the specified field and its value with check function*/
 export async function update(field, value) {
-    if (!await checkUpdate(field, value)) return
+    if (!checkUpdate(field, value)) return
     await helperUpdate(field, value)
 }
 
 /**Updates the specified field and its value without a check Function */
-async function helperUpdate(field, value) {
+export async function helperUpdate(field, value) {
     const response = await fetch(process.env.VUE_APP_USER + "/changedetails", {
         method: 'POST',
         headers: {
@@ -82,7 +112,7 @@ async function helperUpdate(field, value) {
 }
 
 /**Checks the data fields before sending them to back-end */
-async function checkUpdate(field, value) {
+function checkUpdate(field, value) {
     switch (field.toUpperCase()) {
         case 'NAME': return checkUpdateNameSurname(field, value)
         case 'SURNAME': return checkUpdateNameSurname(field, value)
@@ -177,11 +207,6 @@ function checkUpdateRecoveryMail(value) {
     }
 }
 
-/**Removes the recovery mail */
-export async function deleteRecoveryMail(field, value) {
-    helperUpdate(field, value)
-}
-
 /**Checks the user phone number */
 function checkUpdatePhone(value) {
     let code = value.split('-')[0]
@@ -217,11 +242,6 @@ function checkUpdatePhone(value) {
         return false
     }
     return true
-}
-
-/**Removes the phone number */
-export async function deletePhone(field, value) {
-    await helperUpdate(field, value)
 }
 
 /**Checks if password fields are valid */
@@ -261,13 +281,13 @@ export async function changePassword(oldPass, newPass, confirmPass) {
     if (response.status == 200) {
         store.dispatch('change_error_modify_detail', true)
         store.dispatch('set_error_modify_detail_msg', "Password Changed")
-        //lastOP.value = true
+        store.dispatch('set_lastop', true)
         await getUser()
     }
     else if (response.status == 401) {
         store.dispatch('change_error_modify_detail', true)
         store.dispatch('set_error_modify_detail_msg', "Old password isn't correct")
-        //lastOP.value = false
+        store.dispatch('set_lastop', false)
         await getUser()
     }
     else if (response.status == 403) tokenNotValid()

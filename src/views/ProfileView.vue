@@ -1,7 +1,7 @@
 <script setup>
     import { computed, onMounted, watch } from 'vue';
     import { useStore } from 'vuex';
-    import { getUser } from '@/SharedJS/ProfileJS/ProfileUserJS'
+    import { getUser } from '@/SharedJS/ProfileJS/ProfileUpdateJS'
     import ProfileError from '@/components/ProfileError.vue';
     import ProfileShowAll from '@/components/ProfileShowAll.vue';
     import ProfileName from '@/components/ProfileName.vue'

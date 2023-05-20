@@ -1,5 +1,5 @@
 <script setup>
-    import { update, deletePhone } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
+    import { update, helperUpdate } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
     import { reactive, computed, ref } from 'vue'
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
@@ -12,8 +12,9 @@
     }) 
     const addPhone = ref(null)
 
-    function preDeletePhone(field, value){
-        deletePhone(field, value)
+    /**Removes the phone number */
+    async function deletePhone(field, value) {
+        await helperUpdate(field, value)
         contactInfo.Code = null
         contactInfo.Phone = null
     }
@@ -72,7 +73,7 @@
                                     <v-text-field class="my-sm-4" label="Phone" append-inner-icon="mdi-pencil"
                                         v-model="contactInfo.Phone"
                                         @click:append-inner="update('phone', contactInfo.Code + '-' + contactInfo.Phone)"
-                                        append-icon="mdi-delete" @click:append="preDeletePhone('phone', null)" />
+                                        append-icon="mdi-delete" @click:append="deletePhone('phone', null)" />
                                 </v-col>
                             </v-row>
                         </v-col>

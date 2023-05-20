@@ -4,7 +4,7 @@
     import { useStore } from 'vuex';
     import { useVuelidate } from '@vuelidate/core'
     import { required, helpers } from '@vuelidate/validators'
-    import router from '@/router';
+    import { tokenNotValid, refreshToken } from '@/SharedJS/TokenJS/RefreshInvalidToken';
 
     /**Used to access vuex store */
     const store = useStore()
@@ -172,7 +172,7 @@
     function optionExe(index, val) {
         switch (index) {
             case 0:
-                deleteRecord([val._id])
+                deleteRecord('?elements[]=' + val._id)
                 break;
             case 1:
                 navigator.clipboard.writeText(val.email)
@@ -197,12 +197,17 @@
 
     /**Deletes the selected records from user vault*/
     async function deleteSelected() {
-        if (selectedItems.value.length > 0) await deleteRecord(selectedItems.value)
+        if (selectedItems.value.length > 0){ 
+            const format = '&elements[]='
+            let query = '?elements[]=' + selectedItems.value[0]
+            selectedItems.value.splice(0, 1)
+            selectedItems.value.map(items => query = query + format + items)
+            await deleteRecord(query)
+        }
     }
 
     /**Adds the selected records to a folder */
     async function addRemoveSelectedToFromFolders(b) {
-        //create one for elements too
         if (selectedItems.value.length <= 0) return
         if (!b) addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
         else selectedItems.value.map(x => addRemoveToFromFolder.value.map(async folder => await removeRecordsFromFolders(folder, x)))
@@ -291,32 +296,6 @@
 
     }
 
-    /**If the token is not valid removes the authentication */
-    function tokenNotValid() {
-        store.dispatch('access_token', null)
-        store.dispatch('refresh_token', null)
-        store.dispatch('change_auth', false)
-        store.dispatch('set_user', null)
-        store.dispatch('set_user_name', null)
-        store.dispatch('set_user_surname', null)
-        router.push({
-            name: 'login'
-        })
-    }
-
-    /**Calls the backend to refresh token */
-    async function refreshToken() {
-        const response = await fetch(process.env.VUE_APP_TOKEN, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ "token": computed(() => store.getters.getRefreshToken).value })
-        })
-        const data = await response.json()
-        store.dispatch('access_token', data.accessToken)
-    }
-
     /**Calls the back-end to retrieve user created folders */
     async function getFolders() {
         folders.value = []
@@ -388,7 +367,7 @@
 
     /**Calls the back-end to remove a user created folder */
     async function removeFolder(folder) {
-        const response = await fetch(process.env.VUE_APP_FOLDER + '?ids=' + folder, {
+        const response = await fetch(process.env.VUE_APP_FOLDER + '?ids[]=' + folder, {
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
@@ -558,25 +537,19 @@
     }
 
     /**Calls the back-end to delete a/multiple record/s */
-    async function deleteRecord(id) {
-        const response = await fetch(process.env.VUE_APP_VAULT, {
+    async function deleteRecord(query) {
+        const response = await fetch(process.env.VUE_APP_VAULT + query, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,
             },
             credentials: 'include',
-            body: JSON.stringify({ "elements": id })
         })
-        if (response.status == 200) {
-            id.map(x => {
-                folders.value.map(folder => removeRecordsFromFolders(folder.k, x))
-            })
-        }
-        else if (response.status == 403) tokenNotValid()
+        lastOP.value = response.status == 200
+        if (response.status == 403) tokenNotValid()
         else if (response.status == 498) {
             await refreshToken()
-            await deleteRecord(id)
+            await deleteRecord(query)
         }
         await getVault()
     }
@@ -585,7 +558,7 @@
     async function removeRecordsFromFolders(folder, record) {
         const response = await fetch(process.env.VUE_APP_FOLDER + '/remove?folder=' + folder + '&element=' + record, {
             method: 'DELETE',
-            headers: {'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value,}
+            headers: { 'Authorization': 'Bearer ' + computed(() => store.getters.getToken).value, }
         })
         lastOP.value = response.status == 200
         if (response.status == 403) tokenNotValid()
@@ -597,10 +570,10 @@
         filterTags("All")
     }
 
-    function addRemoveToFromFav(item) {
+    async function addRemoveToFromFav(item) {
         item.favorite = !item.favorite
         recordSelected.value = item;
-        update()
+        await update()
     }
 </script>
 
@@ -619,23 +592,20 @@
                                 Filter
                                 <v-divider thickness="1"></v-divider>
                             </div>
-
                             <div class="px-xl-2 text-subtitle-1 font-weight-light">
                                 <div>
                                     All tags
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-if="lastFilter == 'All'"
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-if="lastFilter == 'All'" 
                                     style="color: #2196f3;" @click="filterTags('All')">
                                     <v-icon size="small" icon="mdi-set-all" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-else
-                                    @click="filterTags('All')">
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-else @click="filterTags('All')">
                                     <v-icon size="small" icon="mdi-set-all" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     All
                                 </div>
-                                <div class="pl-xl-6 popOut changePointer d-flex align-center"
-                                    v-if="lastFilter == 'Favorite'" style="color: #2196f3;" @click="filterTags('Favorite')">
+                                <div class="pl-xl-6 popOut changePointer d-flex align-center" v-if="lastFilter == 'Favorite'" style="color: #2196f3;" @click="filterTags('Favorite')">
                                     <v-icon size="small" icon="mdi-star" class="d-none d-sm-flex pr-sm-3"></v-icon>
                                     Favorite
                                 </div>
@@ -809,6 +779,14 @@
                                 <v-list-item @click="optionExe(0, item)">
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    <v-list-item-title>Add Record to a folder</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
+                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                </v-list-item>
                             </v-list>
                         </v-menu>
                         <v-menu v-if="item.tags == 'Credit Card'">
@@ -822,6 +800,14 @@
                                 </v-list-item>
                                 <v-list-item @click="optionExe(0, item)">
                                     <v-list-item-title>Remove Record</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    <v-list-item-title>Add Record to a folder</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
+                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -837,6 +823,14 @@
                                 <v-list-item @click="optionExe(0, item)">
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    <v-list-item-title>Add Record to a folder</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
+                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                </v-list-item>
                             </v-list>
                         </v-menu>
                         <v-menu v-if="item.tags == 'Notes'">
@@ -846,6 +840,14 @@
                             <v-list>
                                 <v-list-item @click="optionExe(0, item)">
                                     <v-list-item-title>Remove Record</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    <v-list-item-title>Add Record to a folder</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item
+                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
+                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -931,7 +933,7 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                        <v-col cols="12" sm="6">
+                        <v-col cols="12" md="6">
                             <v-text-field clearable label="Name" v-model="data.name" />
                             <div class="text-caption text-red" v-for="error in v$.name.$errors" :key="error.$uid">
                                 {{ data.name + error.$message }}
@@ -990,7 +992,7 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="folderDialog" width="500">
+    <v-dialog v-model="folderDialog" width="1024">
         <v-card>
             <v-card-title class="d-flex align-self-center">
                 <div v-if="folderOption" class="mt-1 pt-1 text-h5">
@@ -1021,7 +1023,7 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="addRemoveToFromFolderDialog" width="500">
+    <v-dialog persistent v-model="addRemoveToFromFolderDialog" width="1024">
         <v-card>
             <v-card-title class="d-flex align-self-center">
                 <div v-if="!addRemoveToFromFolderOption" class="mt-1 pt-1 text-h5">
