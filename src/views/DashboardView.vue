@@ -187,7 +187,7 @@
                 function(value) {
                     const containsLetters = /[A-Za-z]/.test(value)
                     const containsNumber = /[0-9]/.test(value)
-                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
                     return containsLetters && !containsNumber && !containsSpecial
                 })
             },
@@ -199,7 +199,7 @@
                     const containsUppercase = /[A-Z]/.test(value)
                     const containsLowercase = /[a-z]/.test(value)
                     const containsNumber = /[0-9]/.test(value)
-                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
                     return !containsUppercase && !containsLowercase && containsNumber && !containsSpecial
                 })
             },
@@ -211,7 +211,7 @@
                     const containsUppercase = /[A-Z]/.test(value)
                     const containsLowercase = /[a-z]/.test(value)
                     const containsNumber = /[0-9]/.test(value)
-                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
                     return !containsUppercase && !containsLowercase && containsNumber && !containsSpecial
                 })
             },
@@ -236,7 +236,7 @@
                 function(value) {
                     const containsLetters = /[A-Za-z]/.test(value)
                     const containsNumber = /[0-9]/.test(value)
-                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
                     return containsLetters && !containsNumber && !containsSpecial
                 })
             },
@@ -244,7 +244,7 @@
                 valid: helpers.withMessage('Invalid ID number',
                 function(value) {
                     const alphanumeric = /[A-Za-z0-9]/.test(value)
-                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
                     return alphanumeric && !containsSpecial
                 })
             },
@@ -611,7 +611,6 @@
 
     /**Calls the back-end to add a new record */
     async function addRecord(data) {
-        console.log(data)
         const response = await fetch(process.env.VUE_APP_VAULT, {
             method: 'POST',
             headers: {
@@ -620,9 +619,10 @@
             },
             body: JSON.stringify(data)
         })
-        if (response.status == 201) {
+        if (response.status == 200) {
             await getVault()
-            addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, [vault.value.filter(e => e.name == data.name)[0]._id]))
+            const resData = await response.json()
+            addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, [resData.id]))
             lastOP.value = true
         }
         else if (response.status == 403) tokenNotValid()
@@ -1068,7 +1068,7 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                        <v-col cols="12" md="6">
+                        <v-col cols="12" sm="6">
                             <v-text-field clearable label="Name" v-model="dataAccount.name" />
                             <div class="text-caption text-red" v-for="error in vAccount$.name.$errors" :key="error.$uid">
                                 {{ error.$message }}
@@ -1131,7 +1131,7 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                        <v-col cols="12" md="6">
+                        <v-col cols="12" sm="6">
                             <v-text-field clearable label="Name" v-model="dataCC.name" />
                             <div class="text-caption text-red" v-for="error in vCC$.name.$errors" :key="error.$uid">
                                 {{ error.$message }}
@@ -1202,7 +1202,7 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                        <v-col cols="12" md="6">
+                        <v-col cols="12" sm="6">
                             <v-text-field clearable label="Name" v-model="dataID.name" />
                             <div class="text-caption text-red" v-for="error in vID$.name.$errors" :key="error.$uid">
                                 {{ error.$message }}
@@ -1261,13 +1261,13 @@
             <v-card-text>
                 <v-container>
                     <v-row>
-                        <v-col cols="6">
+                        <v-col cols="12" sm="6">
                             <v-text-field clearable label="Name" v-model="dataNotes.name" />
                             <div class="text-caption text-red" v-for="error in vNotes$.name.$errors" :key="error.$uid">
                                 {{ error.$message }}
                             </div>
                         </v-col>
-                        <v-col v-if="!modification" cols="6">
+                        <v-col v-if="!modification" cols="12" sm="6">
                             <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>

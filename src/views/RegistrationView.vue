@@ -22,26 +22,44 @@
   /**Rules used by the vuelidator to validate the form */
   const rules = computed(() => {
     return{
-        name: { required: helpers.withMessage('Name is required', required), 
-            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax))  
+        name: { 
+            required: helpers.withMessage('Name is required', required), 
+            maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax)), 
+            valid: helpers.withMessage('Name must only contain letters',
+                function(value) {
+                    const containsNumber = /[0-9]/.test(value)
+                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    return !containsNumber && !containsSpecial
+                }
+            )
         },
-        surname: { required: helpers.withMessage('Surname is required', required), 
-            maxLength: maxLength(uiLengthMax) 
+        surname: { 
+            required: helpers.withMessage('Surname is required', required), 
+            maxLength: maxLength(uiLengthMax), 
+            valid: helpers.withMessage('Surname must only contain letters',
+                function(value) {
+                    const containsNumber = /[0-9]/.test(value)
+                    const containsSpecial = /[#?!@$%^&*-]/.test(value)
+                    return !containsNumber && !containsSpecial
+                }
+            )
         },
-        email: { required: helpers.withMessage('Email is required', required), 
+        email: { 
+            required: helpers.withMessage('Email is required', required), 
             email : helpers.withMessage(' is not a valid email address', email)
         },
-        password: { required: helpers.withMessage('Password is required', required), 
+        password: { 
+            required: helpers.withMessage('Password is required', required), 
             minLength: helpers.withMessage('The minimum length allowed is ' + uiLengthMin, minLength(uiLengthMin)), 
             maxLength: helpers.withMessage('The maximum length allowed is ' + uiLengthMax, maxLength(uiLengthMax)) ,
             valid: helpers.withMessage('The password must contain atleast a lowercase letter, uppercase letter, a number and a symbol',
-            function(value) {
-                const containsUppercase = /[A-Z]/.test(value)
-                const containsLowercase = /[a-z]/.test(value)
-                const containsNumber = /[0-9]/.test(value)
-                const containsSpecial = /[#?!@$%^&*-]/.test(value)
-                return containsUppercase && containsLowercase && containsNumber && containsSpecial
-            }
+                function(value) {
+                    const containsUppercase = /[A-Z]/.test(value)
+                    const containsLowercase = /[a-z]/.test(value)
+                    const containsNumber = /[0-9]/.test(value)
+                    const containsSpecial = /[#?!@$£%^&*)("'=_.,;°§ç+}{/><|:@-]/.test(value)
+                    return containsUppercase && containsLowercase && containsNumber && containsSpecial
+                }
             )
         },
         confirmation: { required: helpers.withMessage('Confirmation is required', required), 
@@ -65,6 +83,7 @@
 
   /**Calls the back-end to register the user */
   async function submit(){
+    delete data.confirmation
     await fetch(process.env.VUE_APP_USER + '/register',{
         method: 'POST',
         headers: {'Content-Type': 'application/json'},

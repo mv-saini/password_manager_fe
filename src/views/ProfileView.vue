@@ -18,7 +18,7 @@
     const comp = computed(() => store.getters.getShowComp)
 
     onMounted(async () => {
-        setTimeout(await getUser(), 500)
+        await getUser()
     })
 
     watch(lastOP, () => {

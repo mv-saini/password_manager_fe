@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { tokenNotValid, refreshToken } from '../TokenJS/RefreshInvalidToken';
 import store from '@/store'
 
-const months = ref([
+export const months = ref([
     {
         month: "January",
         days: 31
@@ -62,9 +62,9 @@ export async function getUser() {
     })
     if(response.status == 200){
         const resData = await response.json()
+        store.dispatch('set_user_name', resData.user.name)
+        store.dispatch('set_user_surname', resData.user.surname)
         if(resData.user.dob != undefined){
-            store.dispatch('set_user_name', resData.user.name)
-            store.dispatch('set_user_surname', resData.user.surname)
             store.dispatch('set_basic_info_birthday_month', resData.user.dob.split('-')[1])
             store.dispatch('set_basic_info_birthday_day', resData.user.dob.split('-')[0])
             store.dispatch('set_basic_info_birthday_year', resData.user.dob.split('-')[2])
@@ -74,6 +74,10 @@ export async function getUser() {
         if(resData.user.phone != undefined){
             store.dispatch('set_contact_info_phone', resData.user.phone.split("-")[1])
             store.dispatch('set_contact_info_code', resData.user.phone.split("-")[0])
+        }
+        else{
+            store.dispatch('set_contact_info_phone', null)
+            store.dispatch('set_contact_info_code', null)
         }
     }
     else if(response.status == 403) tokenNotValid()
@@ -283,6 +287,7 @@ export async function changePassword(oldPass, newPass, confirmPass) {
         store.dispatch('set_error_modify_detail_msg', "Password Changed")
         store.dispatch('set_lastop', true)
         await getUser()
+        store.dispatch('set_show_comp', 'ShowAll')
     }
     else if (response.status == 401) {
         store.dispatch('change_error_modify_detail', true)

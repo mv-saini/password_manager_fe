@@ -1,6 +1,6 @@
 <script setup>
-    import { update } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
-    import { ref, reactive, computed } from 'vue'
+    import { update, goBack, months } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
+    import { reactive, computed } from 'vue'
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
 
@@ -13,58 +13,6 @@
             year: computed(() => store.getters.getBasicInfoBirthday).value.year,
         },
     })
-
-    const months = ref([
-    { 
-        month: "January",
-        days: 31
-    },
-    { 
-        month: "Febraury",
-        days: 28
-    },
-    { 
-        month: "March",
-        days: 31
-    },
-    { 
-        month: "April",
-        days: 30
-    },
-    { 
-        month: "May",
-        days: 31
-    },
-    { 
-        month: "June",
-        days: 30
-    },
-    { 
-        month: "July",
-        days: 31
-    },
-    { 
-        month: "August",
-        days: 31
-    },
-    { 
-        month: "September",
-        days: 30
-    },
-    { 
-        month: "October",
-        days: 31
-    },
-    { 
-        month: "November",
-        days: 30
-    },
-    { 
-        month: "December",
-        days: 31
-    },
-    ])
-
 </script>
 
 <template>

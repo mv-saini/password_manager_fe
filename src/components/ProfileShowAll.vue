@@ -24,6 +24,8 @@
 
     onMounted(() => {
         setTimeout(() => {
+            basicInfo.Name = computed(() => store.getters.getUserName).value
+            basicInfo.Surname = computed(() => store.getters.getUserSurname).value
             basicInfo.Birthday.month = computed(() => store.getters.getBasicInfoBirthday).value.month
             basicInfo.Birthday.day = computed(() => store.getters.getBasicInfoBirthday).value.day
             basicInfo.Birthday.year = computed(() => store.getters.getBasicInfoBirthday).value.year
