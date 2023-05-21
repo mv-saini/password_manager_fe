@@ -1,29 +1,59 @@
 <script setup>
     import { onMounted, watch, ref } from 'vue';
     
+    /**max password length */
     const sliderMax = ref(30)
-    const sliderMin = ref(10)
-    const lengthSlider = ref(10)
-    const passGenerated = ref('')
-    const uppercase = ref(true)
-    const lowercase = ref(true)
-    const number = ref(true)
-    const symbol = ref(true)
-    const stringUppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    const stringLowercase = 'abcdefghijklmnopqrstuvwxyz'
-    const stringNumber = '0123456789'
-    const stringSymbol = "('!@#$%^&*()'"
-    const chars = ref(stringLowercase + stringNumber + stringUppercase + stringSymbol)
-    const color = "#2196f3"
 
+    /**min password length */
+    const sliderMin = ref(10)
+
+    /**starting point of slider */
+    const lengthSlider = ref(10)
+
+    /**contains the password generated */
+    const passGenerated = ref('')
+
+    /**should generated password contain uppercase letters*/
+    const uppercase = ref(true)
+
+    /**should generated password contain lowercase letters*/
+    const lowercase = ref(true)
+
+    /**should generated password contain numbers*/
+    const number = ref(true)
+
+    /**should generated password contain symbols*/
+    const symbol = ref(true)
+
+    /**uppercase letters to choose randomly */
+    const stringUppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+    /**lowercase letters to choose randomly */
+    const stringLowercase = 'abcdefghijklmnopqrstuvwxyz'
+
+    /**numbers to choose randomly */
+    const stringNumber = '0123456789'
+
+    /**sybbols to choose randomly */
+    const stringSymbol = "('!@#$%^&*()'"
+
+    /**Concatenation of lowercase letters, numbers, uppercase letters and symbols to randomly choose from */
+    const chars = ref(stringLowercase + stringNumber + stringUppercase + stringSymbol)
+
+    /**color of various buttons */
+    const color = "#2196f3"
+    
+    /**as soon as component is mounted calls the functions inside */
     onMounted(() => {
         getPassword()
     })
 
+    /**watcher that watches lengthSlider for any changes, if a change occurs then calls the function */
     watch(lengthSlider, () => {
         checkBeforeGenerate()
     })
 
+    /**watcher that watches the const declared, if a change occurs calls the function */
     watch([uppercase, lowercase, number, symbol], () => shouldContain())
 
     /**Generates new password */

@@ -4,9 +4,16 @@ import { useStore } from 'vuex'
 import { useTheme } from "vuetify";
 import router from '@/router';
 
+/**to access data stored in vuex store */
 const store = useStore()
+
+/**theme of the app */
 const theme = useTheme()
+
+/**log status of user */
 const log = computed(() => store.getters.getAuth)
+
+/**to set app theme */
 theme.global.name.value = computed(() => store.getters.getTheme).value
 
 /**toggles the theme of the app */

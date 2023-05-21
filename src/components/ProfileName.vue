@@ -3,9 +3,11 @@
     import { useStore } from 'vuex';
     import { update } from '@/SharedJS/ProfileJS/ProfileUpdateJS';
     import ProfileGoBack from './ProfileGoBack.vue';
-
+    
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 
+    /**basic info containing only name */
     const basicInfo = reactive({
         Name: computed(() => store.getters.getUserName).value,
         Surname: computed(() => store.getters.getUserSurname).value,

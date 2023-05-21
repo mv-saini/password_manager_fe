@@ -45,6 +45,9 @@
     /**Contains the new name of a existing folder or a new folder */
     const folderName = ref(null)
 
+    /**If theres an error creating or changing the name of a folder*/
+    const folderNameError = ref(false)
+
     /**If the last user request was successful or not */
     const lastOP = ref(false)
 
@@ -348,10 +351,12 @@
         addToFolderDialog.value = false
     }
 
+    /**removes all records in the selected folder */
     async function removeAllRecordsFromAFolder(){
         filteredList.value.map(async el => await removeRecordsFromFolders(lastFilter.value, el._id))
     }
     
+    /**removes the selected record from the selected folder */
     async function removeThisRecordFromAFolder(id){
         await removeRecordsFromFolders(lastFilter.value, id)
     }
@@ -378,6 +383,7 @@
         
     }
 
+    /**loading the account object with the selected record's data to show */
     function toggleAccount(item){
         dataAccount.email = item.email
         dataAccount.password = item.password
@@ -389,6 +395,7 @@
         dialogAccounts.value = true;
     }
 
+    /**loading the credit card object with the selected record's data to show */
     function toggleCC(item){
         dataCC.card_holder = item.card_holder
         dataCC.card_number = item.card_number
@@ -400,6 +407,7 @@
         dialogCC.value = true;
     }
 
+    /**loading the identity card object with the selected record's data to show */
     function toggleID(item){
         dataID.id_holder = item.id_holder
         dataID.id_number = item.id_number
@@ -409,6 +417,7 @@
         dialogID.value = true;
     }
 
+    /**loading the notes object with the selected record's data to show */
     function toggleNotes(item){
         dataNotes.notes = item.notes
         dataNotes.name = item.name
@@ -477,7 +486,7 @@
             vault.value = data.vault
             await getFolders()
             if(!belongsFolder()){ 
-                if(belongsTags) filterTags(lastFilter.value)
+                if(belongsTags()) filterTags(lastFilter.value)
                 else filterTags('All')
             }
             else filterFolders(lastFilter.value)
@@ -530,7 +539,9 @@
             lastOP.value = true
             folderName.value = ""
             folderDialog.value = false
+            folderNameError.value = false
         }
+        else if(response.status == 409) folderNameError.value = true
         else if (response.status == 403) tokenNotValid()
         else if (response.status == 498) {
             await refreshToken()
@@ -553,7 +564,9 @@
             lastOP.value = true
             folderName.value = ""
             folderDialog.value = false
+            folderNameError.value = false
         }
+        else if(response.status == 409) folderNameError.value = true
         else if (response.status == 403) tokenNotValid()
         else if (response.status == 498) {
             await refreshToken()
@@ -575,9 +588,9 @@
             await refreshToken()
             await removeFolder(folder)
         }
-        filterTags('All')
     }
 
+    /**checks the update data before sending it to the backend */
     async function checkUpdate(data){
         recordSelected.value = data
         if(data.tags == 'Accounts' && await vAccount$.value.$validate()) await update()
@@ -641,6 +654,7 @@
         resetDialogs(data.tags)
     }
 
+    /**resets the dialog of the given tag */
     function resetDialogs(tag){
         switch(tag){
             case 'Accounts':
@@ -683,7 +697,7 @@
         else filterFolders(lastFilter.value)
     }
 
-    /**Clears the form data fields and reset the form validator */
+    /**Clears the data fields and reset the form validator for accounts*/
     function clearDataAccounts() {
         dataAccount.email = ''
         dataAccount.name = ''
@@ -694,6 +708,7 @@
         vAccount$.value.$reset()
     }
 
+    /**Clears the data fields and reset the form validator for credit cards*/
     function clearDataCC() {
         dataCC.card_holder = ''
         dataCC.card_number = ''
@@ -705,6 +720,7 @@
         vCC$.value.$reset()
     }
 
+    /**Clears the data fields and reset the form validator for identity*/
     function clearDataID() {
         dataID.id_holder = ''
         dataID.id_number = ''
@@ -714,6 +730,7 @@
         vID$.value.$reset()
     }
 
+    /**Clears the data fields and reset the form validator for notes*/
     function clearDataNotes() {
         dataNotes.name = ''
         dataNotes.notes = ''
@@ -756,6 +773,7 @@
         else filterFolders(lastFilter.value)
     }
 
+    /**adds or removes the record from the favorite tag */
     async function addRemoveToFromFav(item) {
         item.favorite = !item.favorite
         recordSelected.value = item;
@@ -763,6 +781,7 @@
         await update()
     }
 
+    /**used to check if the last filter was a tag or not */
     function belongsTags(){
         if('All' == lastFilter.value) return true
         else if('Favorite' == lastFilter.value) return true
@@ -776,6 +795,7 @@
         return found
     }
 
+    /**used to check if the last filter was a folder or not */
     function belongsFolder(){
         let found = false
         folders.value.map(folder => {
@@ -1323,7 +1343,7 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="folderDialog" width="1024">
+    <v-dialog persistent v-model="folderDialog" width="1024">
         <v-card>
             <v-card-title class="d-flex align-self-center">
                 <div v-if="folderOption" class="mt-1 pt-1 text-h5">
@@ -1340,10 +1360,23 @@
                             <v-text-field v-model="folderName" label="Folder Name" clearable></v-text-field>
                         </v-col>
                     </v-row>
+                    <v-row no-gutters v-if="folderNameError && folderOption">
+                        <v-col no-gutters>
+                            <div style="color: red;" class="text-subtitle-2">Error creating folder, folder already exists</div>
+                        </v-col>
+                    </v-row>
+                    <v-row no-gutters v-if="folderNameError && !folderOption">
+                        <v-col no-gutters>
+                            <div style="color: red;" class="text-subtitle-2">Error renaming folder, folder already exists</div>
+                        </v-col>
+                    </v-row>
                 </v-container>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
+                <v-btn color="blue-darken-1" variant="text" @click="folderDialog = false, folderNameError = false, folderName = ''">
+                    Close
+                </v-btn>
                 <v-btn v-if="folderOption" color="blue-darken-1" variant="text" @click="addFolder()">
                     Add
                 </v-btn>

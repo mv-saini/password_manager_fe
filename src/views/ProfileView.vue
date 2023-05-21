@@ -11,16 +11,24 @@
     import ProfilePhone from '@/components/ProfilePhone.vue';
     import ProfilePassword from '@/components/ProfilePassword.vue';
 
+    /**used to access vuex store to exchange data between different components */
     const store = useStore()
 
+    /**if the last operation was successful or not */
     const lastOP = computed(() => store.getters.getLastOP)
+
+    /**loading color based on the theme */
     const loadingColor = computed(() => store.getters.getLoadingColor)
+
+    /**specific component to show */
     const comp = computed(() => store.getters.getShowComp)
 
+    /**ass soon as component is mounted */
     onMounted(async () => {
         await getUser()
     })
 
+    /**watcher that watches the lastOP, if a change occurs then simulate a loading bar */
     watch(lastOP, () => {
         setTimeout(store.dispatch('set_lastop', true), 1200)
     })

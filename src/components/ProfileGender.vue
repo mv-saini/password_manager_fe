@@ -4,8 +4,10 @@
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 
+    /**basic info containing only gender */
     const basicInfo = reactive({
         Gender: computed(() => store.getters.getBasicInfoGender).value
     })

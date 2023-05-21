@@ -3,18 +3,25 @@
     import { reactive, ref } from 'vue'
     import ProfileGoBack from './ProfileGoBack.vue';
 
+    /**contact info containing only password */
     const contactInfo = reactive({
         OldPassword: null,
         NewPasword: null,
         ConfirmNewPassword: null
     })
 
+    /**to show and hide old password fro text field */
     const showHideOldPass = ref(false)
+
+    /**to show and hide new password from text field */
     const showHideNewPass = ref(false)
+
+    /**to show and hide new password confirmation from text field */
     const showHideNewConfimPass = ref(false)
 
-    function preChangePassword(oldPass, newPass, confirmPass){
-        changePassword(oldPass, newPass, confirmPass)
+    /**nullifies all the properties inside contact info after calling backend*/
+    async function preChangePassword(oldPass, newPass, confirmPass){
+        await changePassword(oldPass, newPass, confirmPass)
         contactInfo.OldPassword = null
         contactInfo.NewPasword = null
         contactInfo.ConfirmNewPassword = null

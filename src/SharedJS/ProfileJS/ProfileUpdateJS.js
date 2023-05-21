@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { tokenNotValid, refreshToken } from '../TokenJS/RefreshInvalidToken';
 import store from '@/store'
 
+/**object containing name of months and max days */
 export const months = ref([
     {
         month: "January",
@@ -53,6 +54,7 @@ export const months = ref([
     },
 ])
 
+/**returns the data of user */
 export async function getUser() {
     const response = await fetch(process.env.VUE_APP_USER + '/showdetails?email=' + computed(() => store.getters.getUser).value, {
         method: 'GET',
@@ -302,6 +304,7 @@ export async function changePassword(oldPass, newPass, confirmPass) {
     }
 }
 
+/**go back to main profile page */
 export function goBack() {
     store.dispatch('set_show_comp', 'ShowAll')
 }

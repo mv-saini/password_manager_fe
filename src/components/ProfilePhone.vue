@@ -4,12 +4,16 @@
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
-
+    
+    /**contact info containing only phone */
     const contactInfo = reactive({
         Phone: computed(() => store.getters.getContactInfoPhone).value,
         Code: computed(() => store.getters.getContactInfoCode).value,
-    }) 
+    })
+
+    /**new phone number to add */
     const addPhone = ref(null)
 
     /**Removes the phone number */

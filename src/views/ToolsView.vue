@@ -3,15 +3,23 @@
     import { useStore } from 'vuex';
     import PasswordGeneratorTool from '@/components/PasswordGeneratorTool.vue';
 
+    /**used to access vuex store */
     const store = useStore()
+
+    /**if the last operation was successful or not */
     const lastOP = ref(false)
+
+    /**contains the tool list */
     const toolList = ref([
         {
             'title': 'Password Generator',
         },
     ])
+
+    /**shows the title of the selected tool */
     const selectedTool = ref(toolList.value.at(0).title)
 
+    /**as soon as component is loaded */
     onMounted(() => {
         lastOP.value = true
     })
@@ -22,6 +30,7 @@
         lastOP.value = true
     }
 
+    /**watcher that watches the lastOP, if a change occurs then simulate a loading bar */
     watch(lastOP, () => {
         setTimeout(() => lastOP.value = false, 1200);
     })

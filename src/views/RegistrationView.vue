@@ -4,12 +4,19 @@
   import { required, minLength, maxLength, email, sameAs, helpers } from '@vuelidate/validators'
   import { reactive, computed, ref } from 'vue';
 
+  /**max user input length */
   const uiLengthMax = 30
+
+  /**min user input length */
   const uiLengthMin = 8
 
+  /**shows or hides the password in text field */
   const showHidePass = ref(false)
+
+  /**shows or hides the password confirmation in text field */
   const showHideConfimPass = ref(false)
 
+  /**user data to send to backend */
   const data = reactive({
     name: '',
     surname: '',

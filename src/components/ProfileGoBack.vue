@@ -3,6 +3,7 @@
     import { useStore } from 'vuex'
     import { computed } from 'vue'
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 </script>
 

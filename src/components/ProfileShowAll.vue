@@ -2,8 +2,10 @@
     import { computed, reactive, onMounted } from 'vue';
     import { useStore } from 'vuex';
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 
+    /**basic info of user */
     const basicInfo = reactive({
         Name: computed(() => store.getters.getUserName).value,
         Surname: computed(() => store.getters.getUserSurname).value,
@@ -15,6 +17,7 @@
         Gender: null,
     })
 
+    /**contact info of user */
     const contactInfo = reactive({
         Email: computed(() => store.getters.getUser).value,
         RecoveryEmail: null,
@@ -22,6 +25,7 @@
         Code: null,
     })
 
+    /**as soon as component is mounted does this */
     onMounted(() => {
         setTimeout(() => {
             basicInfo.Name = computed(() => store.getters.getUserName).value
@@ -37,6 +41,7 @@
         
     })
 
+    /**show a specific component */
     function show(comp){
         store.dispatch('set_show_comp', comp)
         store.dispatch('set_comp_title', comp)

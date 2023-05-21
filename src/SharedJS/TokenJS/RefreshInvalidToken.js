@@ -4,6 +4,7 @@ import store from '@/store'
 
 /**If the token is not valid removes the authentication */
 export function tokenNotValid(){
+    console.log("hello")
     store.dispatch('access_token', null)
     store.dispatch('refresh_token', null)
     store.dispatch('change_auth', false)
@@ -24,6 +25,9 @@ export async function refreshToken(){
         },
         body: JSON.stringify({"token": computed(() => store.getters.getRefreshToken).value})
     })
-    const data = await response.json()
-    store.dispatch('access_token', data.accessToken)
+    if(response.status == 200){
+        const data = await response.json()
+        store.dispatch('access_token', data.accessToken)
+    }
+    if(response.status == 403 || response.status == 401) tokenNotValid()
 }

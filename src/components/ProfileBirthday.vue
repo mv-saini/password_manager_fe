@@ -4,8 +4,10 @@
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 
+    /**basicInfo containing Birthday details */
     const basicInfo = reactive({
         Birthday: {
             month: computed(() => store.getters.getBasicInfoBirthday).value.month,

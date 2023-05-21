@@ -3,10 +3,19 @@
   import { reactive, ref } from 'vue';
   import { useStore } from 'vuex'
   
+  /**used to access the vuex store */
   const store = useStore()
+
+  /**used to show error */
   const check = ref(false)
+
+  /**contains the error message */
   const msg = ref('')
+
+  /**shows or hides the password in the text field */
   const showHidePass = ref(false)
+
+  /**data to send to backend */
   const data = reactive({
     email: '',
     password: ''

@@ -4,13 +4,19 @@
     import { useStore } from 'vuex';
     import ProfileGoBack from './ProfileGoBack.vue';
 
+    /**used to access store to exchange data between different pages */
     const store = useStore()
 
+    /**contactInfo containing recovery email */
     const contactInfo = reactive({
         Email: computed(() => store.getters.getUser).value,
         RecoveryEmail: computed(() => store.getters.getContactInfoRecoveryEmail).value,
     })
-    const color = "#2196f3"  
+
+    /**color of btn */
+    const color = "#2196f3" 
+    
+    /**to add the recovery mail */
     const addRecoveryMail = ref(null)
 
     /**Removes the recovery mail */
