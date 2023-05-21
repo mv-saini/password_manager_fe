@@ -55,7 +55,7 @@
     const filteredList = ref([])
 
     /**To remember the last filter */
-    const lastFilter = ref("")
+    const lastFilter = ref("All")
 
     /**An array that contains all the folders created by the user */
     const folders = ref([])
@@ -152,13 +152,10 @@
     })
 
     /**An array that contains the names of folders that will contain the record*/
-    const addRemoveToFromFolder = ref([])
+    const addToFolder = ref([])
 
-    /**Shows the dialog box for removing a record/s or adding a record/s to a folder/s  */
-    const addRemoveToFromFolderDialog = ref(false)
-
-    /**To choose if adding or removing record/s to/from a folder/s */
-    const addRemoveToFromFolderOption = ref(false)
+    /**Shows the dialog box for adding a record/s to a folder/s  */
+    const addToFolderDialog = ref(false)
 
     /**Rules that need to be met before submitting an account */
     const rulesAccount = computed(() => {
@@ -341,18 +338,23 @@
     }
 
     /**Adds the selected records to a folder */
-    async function addRemoveSelectedToFromFolders(b) {
+    async function addSelectedToFolders() {
         if (selectedItems.value.length <= 0) return
-        if (!b) addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
-        else selectedItems.value.map(x => addRemoveToFromFolder.value.map(async folder => await removeRecordsFromFolders(folder, x)))
+        addToFolder.value.map(async folder => await addRecordsToFolders(folder, selectedItems.value))
 
         selectedItems.value = []
         allSelected.value = false
-        addRemoveToFromFolder.value = []
-        addRemoveToFromFolderDialog.value = false
+        addToFolder.value = []
+        addToFolderDialog.value = false
     }
 
+    async function removeAllRecordsFromAFolder(){
+        filteredList.value.map(async el => await removeRecordsFromFolders(lastFilter.value, el._id))
+    }
     
+    async function removeThisRecordFromAFolder(id){
+        await removeRecordsFromFolders(lastFilter.value, id)
+    }
 
     /**Shows the details of a record selected from all the records */
     function showDetails(item) {
@@ -474,7 +476,11 @@
             const data = await response.json()
             vault.value = data.vault
             await getFolders()
-            filterTags("All")
+            if(!belongsFolder()){ 
+                if(belongsTags) filterTags(lastFilter.value)
+                else filterTags('All')
+            }
+            else filterFolders(lastFilter.value)
             lastOP.value = true
         }
         else if (response.status == 403) tokenNotValid()
@@ -569,6 +575,7 @@
             await refreshToken()
             await removeFolder(folder)
         }
+        filterTags('All')
     }
 
     async function checkUpdate(data){
@@ -622,7 +629,7 @@
         if (response.status == 200) {
             await getVault()
             const resData = await response.json()
-            addRemoveToFromFolder.value.map(async folder => await addRecordsToFolders(folder, [resData.id]))
+            addToFolder.value.map(async folder => await addRecordsToFolders(folder, [resData.id]))
             lastOP.value = true
         }
         else if (response.status == 403) tokenNotValid()
@@ -672,6 +679,8 @@
             await addRecordsToFolders(folder, record)
         }
         await getFolders()
+        if(!belongsFolder()) filterTags(lastFilter.value)
+        else filterFolders(lastFilter.value)
     }
 
     /**Clears the form data fields and reset the form validator */
@@ -681,7 +690,7 @@
         dataAccount.link = ''
         dataAccount.notes = ''
         dataAccount.password = ''
-        addRemoveToFromFolder.value = []
+        addToFolder.value = []
         vAccount$.value.$reset()
     }
 
@@ -692,7 +701,7 @@
         dataCC.expiry = ''
         dataCC.name = ''
         dataCC.notes = ''
-        addRemoveToFromFolder.value = []
+        addToFolder.value = []
         vCC$.value.$reset()
     }
 
@@ -701,14 +710,14 @@
         dataID.id_number = ''
         dataID.name = ''
         dataID.notes = ''
-        addRemoveToFromFolder.value = []
+        addToFolder.value = []
         vID$.value.$reset()
     }
 
     function clearDataNotes() {
         dataNotes.name = ''
         dataNotes.notes = ''
-        addRemoveToFromFolder.value = []
+        addToFolder.value = []
         vNotes$.value.$reset()
     }
 
@@ -743,7 +752,8 @@
             await removeRecordsFromFolders(folder, record)
         }
         await getFolders()
-        filterTags("All")
+        if(!belongsFolder()) filterTags(lastFilter.value)
+        else filterFolders(lastFilter.value)
     }
 
     async function addRemoveToFromFav(item) {
@@ -751,6 +761,30 @@
         recordSelected.value = item;
         recordSelectedIDs.value._id = item._id
         await update()
+    }
+
+    function belongsTags(){
+        if('All' == lastFilter.value) return true
+        else if('Favorite' == lastFilter.value) return true
+        let found = false
+        tags.map(tag => {
+            if(tag.text == lastFilter.value){ 
+                found = true
+                return
+            }
+        })
+        return found
+    }
+
+    function belongsFolder(){
+        let found = false
+        folders.value.map(folder => {
+            if(folder.k == lastFilter.value){ 
+                found = true
+                return
+            }
+        })
+        return found
     }
 </script>
 
@@ -903,14 +937,12 @@
                                     }})</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false">
+                                    @click="addToFolderDialog = true">
                                     <v-list-item-title>Add selected records to a folder ({{ selectedItems.length
                                     }})</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true">
-                                    <v-list-item-title>Remove selected records from a folder ({{ selectedItems.length
-                                    }})</v-list-item-title>
+                                <v-list-item v-if="belongsFolder() && filteredList.length > 0" @click="removeAllRecordsFromAFolder()">
+                                    <v-list-item-title>Remove all records from {{ lastFilter }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -973,12 +1005,11 @@
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    @click="addToFolderDialog = true, selectedItems.push(item._id)">
                                     <v-list-item-title>Add Record to a folder</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
-                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                <v-list-item v-if="belongsFolder()" @click="removeThisRecordFromAFolder(item._id)">
+                                    <v-list-item-title>Remove Record from {{ lastFilter }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -995,12 +1026,11 @@
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    @click="addToFolderDialog = true, selectedItems.push(item._id)">
                                     <v-list-item-title>Add Record to a folder</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
-                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                <v-list-item v-if="belongsFolder()" @click="removeThisRecordFromAFolder(item._id)">
+                                    <v-list-item-title>Remove Record from {{ lastFilter }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -1017,12 +1047,11 @@
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    @click="addToFolderDialog = true, selectedItems.push(item._id)">
                                     <v-list-item-title>Add Record to a folder</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
-                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                <v-list-item v-if="belongsFolder()" @click="removeThisRecordFromAFolder(item._id)">
+                                    <v-list-item-title>Remove Record from {{ lastFilter }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -1035,12 +1064,11 @@
                                     <v-list-item-title>Remove Record</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = false, selectedItems.push(item._id)">
+                                    @click="addToFolderDialog = true, selectedItems.push(item._id)">
                                     <v-list-item-title>Add Record to a folder</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item
-                                    @click="addRemoveToFromFolderDialog = true, addRemoveToFromFolderOption = true, selectedItems.push(item._id)">
-                                    <v-list-item-title>Remove Record from a folder</v-list-item-title>
+                                <v-list-item v-if="belongsFolder()" @click="removeThisRecordFromAFolder(item._id)">
+                                    <v-list-item-title>Remove Record from {{ lastFilter }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -1075,7 +1103,7 @@
                             </div>
                         </v-col>
                         <v-col v-if="!modification" cols="12" sm="6">
-                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
+                            <v-select v-model="addToFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>
                         <v-col v-else cols="12" sm="6">
@@ -1138,7 +1166,7 @@
                             </div>
                         </v-col>
                         <v-col v-if="!modification" cols="12" sm="6">
-                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
+                            <v-select v-model="addToFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>
                         <v-col v-else cols="12" sm="6">
@@ -1209,7 +1237,7 @@
                             </div>
                         </v-col>
                         <v-col v-if="!modification" cols="12" sm="6">
-                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
+                            <v-select v-model="addToFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>
                         <v-col v-else cols="12" sm="6">
@@ -1268,7 +1296,7 @@
                             </div>
                         </v-col>
                         <v-col v-if="!modification" cols="12" sm="6">
-                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
+                            <v-select v-model="addToFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>
                         <v-col v-else cols="12" sm="6">
@@ -1326,21 +1354,18 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog persistent v-model="addRemoveToFromFolderDialog" width="1024">
+    <v-dialog persistent v-model="addToFolderDialog" width="1024">
         <v-card>
             <v-card-title class="d-flex align-self-center">
-                <div v-if="!addRemoveToFromFolderOption" class="mt-1 pt-1 text-h5">
+                <div class="mt-1 pt-1 text-h5">
                     Select folders to add to
-                </div>
-                <div v-else class="mt-1 pt-1 text-h5">
-                    Select folders to remove from
                 </div>
             </v-card-title>
             <v-card-text>
                 <v-container>
                     <v-row>
                         <v-col>
-                            <v-select v-model="addRemoveToFromFolder" :items="folders" item-title="k" item-value="k"
+                            <v-select v-model="addToFolder" :items="folders" item-title="k" item-value="k"
                                 label="Folders" chips multiple />
                         </v-col>
                     </v-row>
@@ -1349,15 +1374,11 @@
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue-darken-1" variant="text"
-                    @click="addRemoveToFromFolderDialog = false, selectedItems = [], addRemoveToFromFolder = []">
+                    @click="addToFolderDialog = false, selectedItems = [], addToFolder = []">
                     Close
                 </v-btn>
-                <v-btn v-if="!addRemoveToFromFolderOption" color="blue-darken-1" variant="text"
-                    @click="addRemoveSelectedToFromFolders(false)">
+                <v-btn color="blue-darken-1" variant="text" @click="addSelectedToFolders()">
                     Add
-                </v-btn>
-                <v-btn v-else color="blue-darken-1" variant="text" @click="addRemoveSelectedToFromFolders(true)">
-                    Remove
                 </v-btn>
             </v-card-actions>
         </v-card>
